@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="Favicon.png">  
+<title>Zak's Bar</title>
+<style>
+  :root {
+    --accent:      #c8a96e;
+    --accent-dim:  #a07840;
+    --bg:          #0e0c0a;
+    --bg-card:     #1a1714;
+    --text:        #f0ece4;
+    --text-muted:  #7a726a;
+    --text-faint:  #3d3830;
+    --border:      #2a2520;
+    --danger:      #c05040;
+    --danger-bg:   #1f1008;
+    --danger-text: #e07060;
+    --success:     #5a9e6a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia','Times New Roman',serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ---- Tabs ---- */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-card); position: sticky; top: 0; z-index: 10; }
+  .tab-btn { flex: 1; padding: 14px 12px; background: none; border: none; color: var(--text-muted); font-family: 'Georgia',serif; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ---- Menu ---- */
+  .menu-wrap { max-width: 640px; margin: 0 auto; padding: 0 1rem 3rem; }
+  .menu-header { text-align: center; padding: 2.5rem 1rem 1.5rem; }
+  .bar-name { font-size: 28px; font-weight: 400; letter-spacing: 0.25em; color: var(--accent); }
+  .bar-tagline { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-top: 6px; }
+  .menu-divider { display: flex; align-items: center; gap: 10px; margin: 1.5rem 0 0; color: var(--text-faint); font-size: 11px; }
+  .menu-divider::before, .menu-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .category-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent-dim); margin: 2rem 0 1rem; padding-bottom: 8px; border-bottom: 1px solid var(--text-faint); }
+  .cocktail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--text-faint); gap: 12px; transition: opacity 0.2s; }
+  .cocktail-row:last-child { border-bottom: none; }
+  .cocktail-row.unavail { opacity: 0.45; }
+  .c-left { flex: 1; min-width: 0; }
+  .c-name { font-size: 15px; color: var(--text); letter-spacing: 0.03em; }
+  .cocktail-row.unavail .c-name { text-decoration: line-through; color: var(--text-muted); }
+  .c-desc { font-size: 11px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--text-muted); margin-top: 4px; line-height: 1.6; font-style: italic; }
+  .c-missing { font-size: 10px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--danger-text); margin-top: 5px; }
+  .c-right { text-align: right; flex-shrink: 0; }
+  .c-price { font-size: 14px; color: var(--accent); letter-spacing: 0.05em; }
+  .cocktail-row.unavail .c-price { color: var(--text-muted); }
+  .unavail-tag { display: block; font-size: 9px; font-family: 'Helvetica Neue',Arial,sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--danger-text); margin-top: 4px; }
+  .perso-note { font-size: 12px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--accent-dim); font-style: italic; margin-top: 8px; padding: 8px 12px; border-left: 2px solid var(--accent-dim); }
+
+  /* ---- Lock screen ---- */
+  .lock-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; padding: 2rem; }
+  .lock-icon { font-size: 20px; color: var(--accent); margin-bottom: 1.5rem; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .lock-title { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.25rem; }
+  .lock-input { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 16px; padding: 12px 18px; width: 260px; outline: none; text-align: center; letter-spacing: 0.15em; transition: border-color 0.2s; }
+  .lock-input:focus { border-color: var(--accent); }
+  .lock-input.error { border-color: var(--danger); animation: shake 0.3s; }
+  .lock-error { font-size: 12px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--danger-text); margin-top: 10px; min-height: 18px; }
+  .lock-btn { margin-top: 14px; padding: 11px 32px; background: none; border: 1px solid var(--accent); border-radius: 6px; color: var(--accent); font-family: 'Georgia',serif; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, color 0.2s; }
+  .lock-btn:hover { background: var(--accent); color: var(--bg); }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  /* ---- Admin ---- */
+  .admin-wrap { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .admin-title { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+  .logout-btn { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 11px; letter-spacing: 0.08em; padding: 5px 12px; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+  .logout-btn:hover { border-color: var(--text-muted); color: var(--text); }
+  .admin-hint { font-size: 13px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.25rem; margin-top: 10px; }
+  .save-banner { font-size: 12px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--success); margin-bottom: 1rem; min-height: 18px; opacity: 0; transition: opacity 0.3s; }
+  .save-banner.show { opacity: 1; }
+  .status-line { font-size: 12px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--text-muted); margin-bottom: 1rem; min-height: 18px; }
+  .status-line .count { color: var(--danger-text); font-weight: 500; }
+  .status-line .ok { color: var(--success); }
+  .search-input { width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 14px; padding: 10px 14px; margin-bottom: 1rem; outline: none; transition: border-color 0.2s; }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-muted); }
+  .ing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 7px; }
+  .ing-btn { display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; user-select: none; transition: border-color 0.15s, background 0.15s; text-align: left; width: 100%; gap: 8px; }
+  .ing-btn:hover { border-color: var(--text-faint); }
+  .ing-btn.out { background: var(--danger-bg); border-color: var(--danger); }
+  .ing-label { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 13px; color: var(--text); line-height: 1.3; }
+  .ing-btn.out .ing-label { color: var(--danger-text); }
+  .ing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); flex-shrink: 0; transition: background 0.15s; }
+  .ing-btn.out .ing-dot { background: var(--danger); }
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('menu')">&#9670; Carte</button>
+  <button class="tab-btn" onclick="switchTab('admin')">&#9670; Gestion</button>
+</div>
+
+<!-- CARTE -->
+<div id="panel-menu" class="panel active">
+  <div class="menu-wrap">
+    <div class="menu-header">
+      <div class="bar-name">ZAK'S BAR</div>
+      <div class="bar-tagline">Cocktails faits maison</div>
+      <div class="menu-divider">&#9670;</div>
+    </div>
+    <div id="menu-content"></div>
+  </div>
+</div>
+
+<!-- GESTION -->
+<div id="panel-admin" class="panel">
+
+  <div id="lock-screen" class="lock-screen">
+    <div class="lock-icon">&#9670; Accès barman &#9670;</div>
+    <div class="lock-title">Mot de passe requis</div>
+    <input class="lock-input" id="pw-input" type="password" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter') checkPassword()" autocomplete="off">
+    <div class="lock-error" id="pw-error"></div>
+    <button class="lock-btn" onclick="checkPassword()">Entrer</button>
+  </div>
+
+  <div id="admin-content" style="display:none">
+    <div class="admin-wrap">
+      <div class="admin-header">
+        <div class="admin-title">Gestion des stocks</div>
+        <button class="logout-btn" onclick="logout()">Se déconnecter</button>
+      </div>
+      <p class="admin-hint">Clique sur un ingrédient pour le marquer <strong style="color:var(--danger-text)">indisponible</strong>. Les cocktails concernés sont automatiquement grisés. Les changements sont <strong style="color:var(--success)">sauvegardés automatiquement</strong>.</p>
+      <div class="save-banner" id="save-banner">&#10003; Modifications sauvegardées</div>
+      <div class="status-line" id="status-line"></div>
+      <input class="search-input" id="ing-search" type="text" placeholder="Rechercher un ingrédient..." oninput="renderAdmin()">
+      <div class="ing-grid" id="ing-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   MOT DE PASSE BARMAN
+============================================================ */
+const MOT_DE_PASSE = "Menubar03%";
+
+/* ============================================================
+   COCKTAILS
+   ─ category : "Signatures" | "Classiques" | "Personnalisé"
+   ─ ingredients : noms en minuscules, identiques partout
+   ─ price : "Gratuit" ici
+============================================================ */
+const COCKTAILS = [
+
+  /* ---- Signatures ---- */
+  {
+    name: "Piña Colada",
+    category: "Signatures",
+    price: "Gratuit",
+    desc: "Rhum blanc, lait de coco, jus d'ananas — servi frappé",
+    ingredients: ["rhum blanc", "lait de coco", "jus d'ananas"]
+  },
+
+  /* ---- Classiques ---- */
+  {
+    name: "Mojito",
+    category: "Classiques",
+    price: "Gratuit",
+    desc: "Rhum blanc, menthe fraîche, citron vert, sirop de sucre, eau gazeuse",
+    ingredients: ["rhum blanc", "menthe", "citron vert", "sirop de sucre", "eau gazeuse"]
+  },
+  {
+    name: "Tequila Sunrise",
+    category: "Classiques",
+    price: "Gratuit",
+    desc: "Tequila, jus d'orange, grenadine — dégradé rouge-orangé",
+    ingredients: ["tequila", "jus d'orange", "grenadine"]
+  },
+
+];
+
+/* ============================================================
+   STOCKS DE DÉPART
+   Liste complète des ingrédients disponibles au bar.
+   Les ingrédients NON présents dans cette liste et NON utilisés
+   dans les cocktails n'apparaissent pas dans la gestion.
+   Pour forcer un ingrédient à apparaître dans le panneau
+   même s'il n'est dans aucun cocktail, ajoute-le ici.
+============================================================ */
+const TOUS_LES_INGREDIENTS = [
+  "citron vert",
+  "citron jaune",
+  "sucre de canne",
+  "sirop de sucre",
+  "bailey",
+  "vin rouge",
+  "biere ruby",
+  "biere blonde",
+  "biere blanche",
+  "tequila",
+  "rhum blanc",
+  "rhum agricole",
+  "vodka",
+  "rhum arrangé",
+  /* ingrédients des cocktails pas encore en stock — à retirer si tu les reçois */
+  "menthe",
+  "eau gazeuse",
+  "lait de coco",
+  "jus d'ananas",
+  "jus d'orange",
+  "grenadine",
+];
+
+/* ============================================================
+   CODE — NE PAS MODIFIER EN DESSOUS
+============================================================ */
+const STORAGE_KEY = "zaksbar_missing_v1";
+
+/* Charge les ingrédients manquants depuis localStorage */
+function loadMissing() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  } catch(e) { return new Set(); }
+}
+
+/* Sauvegarde dans localStorage */
+function saveMissing() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...missing]));
+    showSaveBanner();
+  } catch(e) {}
+}
+
+function showSaveBanner() {
+  const b = document.getElementById('save-banner');
+  if (!b) return;
+  b.classList.add('show');
+  clearTimeout(b._t);
+  b._t = setTimeout(() => b.classList.remove('show'), 2000);
+}
+
+const missing = loadMissing();
+
+/* Tous les ingrédients à afficher = union stock + ingrédients des cocktails */
+function getAllIngredients() {
+  const all = new Set(TOUS_LES_INGREDIENTS);
+  COCKTAILS.forEach(c => c.ingredients.forEach(i => all.add(i)));
+  return [...all].sort((a, b) => a.localeCompare(b, 'fr'));
+}
+
+function isAvailable(c) { return !c.ingredients.some(i => missing.has(i)); }
+function getMissing(c)   { return c.ingredients.filter(i => missing.has(i)); }
+
+function renderMenu() {
+  const order = ["Signatures", "Classiques", "Personnalisé"];
+  const categories = order.filter(cat => COCKTAILS.some(c => c.category === cat));
+
+  let html = '';
+  categories.forEach(cat => {
+    html += `<div class="category-title">${cat}</div>`;
+
+    if (cat === "Personnalisé") {
+      html += `<div class="perso-note">&#9670; Demandez au barman — cocktails sur mesure selon les ingrédients disponibles ce soir.</div>`;
+    } else {
+      COCKTAILS.filter(c => c.category === cat).forEach(c => {
+        const avail = isAvailable(c);
+        const miss  = getMissing(c);
+        html += `
+          <div class="cocktail-row ${avail ? '' : 'unavail'}">
+            <div class="c-left">
+              <div class="c-name">${c.name}</div>
+              <div class="c-desc">${c.desc}</div>
+              ${!avail && miss.length ? `<div class="c-missing">&#9670; manque : ${miss.join(', ')}</div>` : ''}
+            </div>
+            <div class="c-right">
+              <div class="c-price">${c.price}</div>
+              ${!avail ? '<span class="unavail-tag">indispo</span>' : ''}
+            </div>
+          </div>`;
+      });
+    }
+  });
+  document.getElementById('menu-content').innerHTML = html;
+}
+
+function renderAdmin() {
+  const search = (document.getElementById('ing-search') || { value: '' }).value.toLowerCase();
+  const all = getAllIngredients().filter(i => i.toLowerCase().includes(search));
+  const count = missing.size;
+
+  document.getElementById('status-line').innerHTML = count > 0
+    ? `<span class="count">${count} ingrédient${count > 1 ? 's' : ''} manquant${count > 1 ? 's' : ''}</span> — certains cocktails peuvent être indisponibles`
+    : `<span class="ok">Tout est disponible ✓</span>`;
+
+  let grid = '';
+  all.forEach(ing => {
+    const out = missing.has(ing);
+    grid += `<button class="ing-btn ${out ? 'out' : ''}" onclick="toggle('${ing.replace(/'/g, "\\'")}')">
+      <span class="ing-label">${ing}</span>
+      <span class="ing-dot"></span>
+    </button>`;
+  });
+  document.getElementById('ing-grid').innerHTML = grid;
+}
+
+function toggle(name) {
+  if (missing.has(name)) missing.delete(name);
+  else missing.add(name);
+  saveMissing();
+  renderAdmin();
+  renderMenu();
+}
+
+function checkPassword() {
+  const input = document.getElementById('pw-input');
+  const error = document.getElementById('pw-error');
+  if (input.value === MOT_DE_PASSE) {
+    document.getElementById('lock-screen').style.display   = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    input.value = '';
+    error.textContent = '';
+    renderAdmin();
+  } else {
+    error.textContent = 'Mot de passe incorrect.';
+    input.classList.add('error');
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 400);
+  }
+}
+
+function logout() {
+  document.getElementById('admin-content').style.display = 'none';
+  document.getElementById('lock-screen').style.display   = 'flex';
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').textContent = '';
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) =>
+    b.classList.toggle('active', ['menu', 'admin'][i] === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+/* Init */
+renderMenu();
+</script>
+</body>
+</html>
