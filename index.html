@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="Favicon.png">  
+<link rel="icon" href="Favicon.png">
 <title>Zak's Bar</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+
 <style>
   :root {
     --accent:      #c8a96e;
@@ -33,7 +36,7 @@
   .panel.active { display: block; }
 
   /* ---- Menu ---- */
-  .menu-wrap { max-width: 640px; margin: 0 auto; padding: 0 1rem 3rem; }
+  .menu-wrap { max-width: 640px; margin: 0 auto; padding: 0 1rem 6rem; }
   .menu-header { text-align: center; padding: 2.5rem 1rem 1.5rem; }
   .bar-name { font-size: 28px; font-weight: 400; letter-spacing: 0.25em; color: var(--accent); }
   .bar-tagline { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-top: 6px; }
@@ -52,7 +55,133 @@
   .c-price { font-size: 14px; color: var(--accent); letter-spacing: 0.05em; }
   .cocktail-row.unavail .c-price { color: var(--text-muted); }
   .unavail-tag { display: block; font-size: 9px; font-family: 'Helvetica Neue',Arial,sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--danger-text); margin-top: 4px; }
+
   .perso-note { font-size: 12px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--accent-dim); font-style: italic; margin-top: 8px; padding: 8px 12px; border-left: 2px solid var(--accent-dim); }
+
+
+  /* ---- Panneau paiement ---- */
+  .payment-total-box { text-align: center; padding: 20px; background: var(--bg); border: 1px solid var(--accent-dim); border-radius: 8px; margin-bottom: 1.5rem; }
+  .payment-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .payment-amount { font-size: 42px; color: var(--accent); font-family: 'Georgia',serif; line-height: 1; }
+  .payment-options { display: flex; flex-direction: column; gap: 10px; }
+  .payment-option-title { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .payment-option-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+  .poc-icon { color: var(--accent); font-size: 10px; flex-shrink: 0; }
+  .poc-content { flex: 1; }
+  .poc-name { font-size: 14px; color: var(--text); margin-bottom: 2px; }
+  .poc-desc { font-size: 11px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .poc-btn { background: var(--accent); color: var(--bg); border: none; border-radius: 5px; padding: 7px 16px; font-family: 'Georgia',serif; font-size: 12px; letter-spacing: 0.08em; cursor: pointer; text-decoration: none; white-space: nowrap; transition: background 0.2s; }
+  .poc-btn:hover { background: #dfc080; }
+  .poc-tag { font-size: 11px; color: var(--accent-dim); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; white-space: nowrap; }
+  .payment-note { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; line-height: 1.5; padding: 10px 12px; border-left: 2px solid var(--accent-dim); margin-top: 4px; }
+
+  /* ---- Bouton Commander flottant ---- */
+  .order-fab {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 50px;
+    padding: 14px 32px;
+    font-family: 'Georgia',serif;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(200,169,110,0.25);
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .order-fab:hover { background: #dfc080; box-shadow: 0 6px 32px rgba(200,169,110,0.4); transform: translateX(-50%) translateY(-2px); }
+  .order-fab:active { transform: translateX(-50%) translateY(0); }
+
+  /* ---- Modal overlay ---- */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem 1.5rem 2.5rem;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .modal-title { font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
+  .modal-close { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px 8px; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+
+  /* ---- Formulaire ---- */
+  .form-group { margin-bottom: 1.25rem; }
+  .form-label { display: block; font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .form-input, .form-textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 14px;
+    padding: 10px 14px; outline: none; transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  /* ---- Cocktails sélecteur ---- */
+  .cocktails-grid { display: flex; flex-direction: column; gap: 8px; }
+  .cocktail-selector {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); gap: 12px; transition: border-color 0.15s;
+  }
+  .cocktail-selector.selected { border-color: var(--accent); background: #1c1810; }
+  .cocktail-selector.disabled { opacity: 0.35; pointer-events: none; }
+  .cs-name { font-size: 14px; color: var(--text); flex: 1; }
+  .cs-unavail { font-size: 10px; color: var(--danger-text); font-family: 'Helvetica Neue',Arial,sans-serif; }
+
+  #order-total { font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .total-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+  .total-amount { font-size: 20px; color: var(--accent); font-family: 'Georgia',serif; }
+  .cs-price-tag { font-size: 10px; color: var(--accent-dim); font-family: 'Helvetica Neue',Arial,sans-serif; margin-top: 3px; }
+  .cs-qty { display: flex; align-items: center; gap: 8px; }
+  .qty-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
+    background: none; color: var(--text-muted); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+  .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .qty-val { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 14px; color: var(--text); width: 20px; text-align: center; }
+
+  /* ---- Bouton envoyer ---- */
+  .submit-btn {
+    width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 8px;
+    color: var(--bg); font-family: 'Georgia',serif; font-size: 14px; letter-spacing: 0.12em;
+    text-transform: uppercase; cursor: pointer; margin-top: 1.5rem;
+    transition: background 0.2s, opacity 0.2s;
+  }
+  .submit-btn:hover { background: #dfc080; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .form-feedback { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 13px; text-align: center; margin-top: 12px; min-height: 20px; }
+  .form-feedback.ok  { color: var(--success); }
+  .form-feedback.err { color: var(--danger-text); }
 
   /* ---- Lock screen ---- */
   .lock-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; padding: 2rem; }
@@ -89,6 +218,7 @@
   .ing-btn.out .ing-label { color: var(--danger-text); }
   .ing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); flex-shrink: 0; transition: background 0.15s; }
   .ing-btn.out .ing-dot { background: var(--danger); }
+
 </style>
 </head>
 <body>
@@ -98,7 +228,7 @@
   <button class="tab-btn" onclick="switchTab('admin')">&#9670; Gestion</button>
 </div>
 
-<!-- CARTE -->
+<!-- ======== CARTE ======== -->
 <div id="panel-menu" class="panel active">
   <div class="menu-wrap">
     <div class="menu-header">
@@ -108,11 +238,87 @@
     </div>
     <div id="menu-content"></div>
   </div>
+  <button class="order-fab" onclick="openOrder()">&#9670; Commander</button>
 </div>
 
-<!-- GESTION -->
-<div id="panel-admin" class="panel">
+<!-- ======== MODAL COMMANDE ======== -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
 
+    <!-- ÉTAPE 1 : Formulaire -->
+    <div id="modal-form">
+      <div class="modal-header">
+        <div class="modal-title">&#9670; Votre commande</div>
+        <button class="modal-close" onclick="closeOrder()">&#10005;</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Prénom</label>
+        <input class="form-input" id="order-nom" type="text" placeholder="Votre prénom" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Cocktails</label>
+        <div class="cocktails-grid" id="cocktails-grid"></div>
+        <div id="order-total" style="display:none;justify-content:space-between;align-items:center;margin-top:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--accent-dim);border-radius:6px;"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Demandes spéciales</label>
+        <textarea class="form-textarea" id="order-message" placeholder="Plus fort, moins fort... "></textarea>
+      </div>
+
+      <button class="submit-btn" id="submit-btn" onclick="submitOrder()">&#9670; Envoyer la commande</button>
+      <div class="form-feedback" id="form-feedback"></div>
+    </div>
+
+    <!-- ÉTAPE 2 : Règlement (affiché après envoi si commande payante) -->
+    <div id="modal-payment" style="display:none">
+      <div class="modal-header">
+        <div class="modal-title">&#9670; Règlement</div>
+        <button class="modal-close" onclick="hidePaymentInfo()">&#10005;</button>
+      </div>
+
+      <div class="payment-total-box">
+        <div class="payment-label">Total à régler</div>
+        <div class="payment-amount" id="payment-total"></div>
+      </div>
+
+      <div class="payment-options">
+        <div class="payment-option-title">Comment payer ?</div>
+
+        <div class="payment-option-card">
+          <div class="poc-icon">&#9670;</div>
+          <div class="poc-content">
+            <div class="poc-name">PayPal</div>
+            <div class="poc-desc">Paiement en ligne instantané</div>
+          </div>
+          <a id="paypal-btn" href="#" target="_blank" class="poc-btn">Payer</a>
+        </div>
+
+        <div class="payment-option-card">
+          <div class="poc-icon">&#9670;</div>
+          <div class="poc-content">
+            <div class="poc-name">Espèces</div>
+            <div class="poc-desc">Règlement directement au bar</div>
+          </div>
+          <div class="poc-tag">Au bar</div>
+        </div>
+
+        <div class="payment-note">
+          Pas de PayPal ? Pas de problème — Rendez vous au bar.
+        </div>
+      </div>
+
+      <button class="submit-btn" style="margin-top:1.5rem" onclick="hidePaymentInfo()">&#10003; C'est noté, merci !</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ======== GESTION ======== -->
+<div id="panel-admin" class="panel">
   <div id="lock-screen" class="lock-screen">
     <div class="lock-icon">&#9670; Accès barman &#9670;</div>
     <div class="lock-title">Mot de passe requis</div>
@@ -121,23 +327,31 @@
     <div class="lock-error" id="pw-error"></div>
     <button class="lock-btn" onclick="checkPassword()">Entrer</button>
   </div>
-
   <div id="admin-content" style="display:none">
     <div class="admin-wrap">
       <div class="admin-header">
         <div class="admin-title">Gestion des stocks</div>
         <button class="logout-btn" onclick="logout()">Se déconnecter</button>
       </div>
+      <p class="admin-hint">Clique sur un ingrédient pour le marquer <strong style="color:var(--danger-text)">indisponible</strong>. Les cocktails concernés sont automatiquement grisés. Les changements sont <strong style="color:var(--success)">sauvegardés automatiquement</strong>.</p>
       <div class="save-banner" id="save-banner">&#10003; Modifications sauvegardées</div>
       <div class="status-line" id="status-line"></div>
       <input class="search-input" id="ing-search" type="text" placeholder="Rechercher un ingrédient..." oninput="renderAdmin()">
       <div class="ing-grid" id="ing-grid"></div>
     </div>
   </div>
-
 </div>
 
 <script>
+/* ============================================================
+   CONFIG EMAILJS
+============================================================ */
+const EMAILJS_PUBLIC_KEY  = "ZL8SCkq8GOwQQ7aGy";
+const EMAILJS_SERVICE_ID  = "service_csu2lu3";
+const EMAILJS_TEMPLATE_ID = "template_chhlm1c";
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
 /* ============================================================
    MOT DE PASSE BARMAN
 ============================================================ */
@@ -145,170 +359,289 @@ const MOT_DE_PASSE = "Menubar03%";
 
 /* ============================================================
    COCKTAILS
-   ─ category : "Signatures" | "Classiques" | "Personnalisé"
-   ─ ingredients : noms en minuscules, identiques partout
-   ─ price : "Gratuit" ici
 ============================================================ */
 const COCKTAILS = [
 
-  /* ---- Signatures ---- */
+  /* -------------------------------------------------------
+     Piña Colada — payant
+     Pour rendre GRATUIT : mets free: true  (ligne ci-dessous)
+     Pour remettre PAYANT : mets free: false
+  ------------------------------------------------------- */
   {
     name: "Piña Colada",
     category: "Signatures",
-    price: "Gratuit",
+    price: "2€",                              // Prix affiché sur la carte
+    pricePerUnit: 2,                           // Prix unitaire (nombre) pour le calcul du total
+    free: false,                              // ← true = gratuit, false = payant
+    paypal: "https://paypal.me/Zetun27/", // Lien PayPal avec montant
     desc: "Rhum blanc, lait de coco, jus d'ananas",
     ingredients: ["rhum blanc", "lait de coco", "jus d'ananas"]
   },
 
-  /* ---- Classiques ---- */
+  /* -------------------------------------------------------
+     Mojito — gratuit
+  ------------------------------------------------------- */
   {
     name: "Mojito",
     category: "Classiques",
     price: "Gratuit",
+    free: true,
     desc: "Rhum blanc, menthe fraîche, citron vert, sirop de sucre, eau gazeuse",
     ingredients: ["rhum blanc", "menthe", "citron vert", "sirop de sucre", "eau gazeuse"]
   },
+
+  /* -------------------------------------------------------
+     Tequila Sunrise — gratuit
+  ------------------------------------------------------- */
   {
     name: "Tequila Sunrise",
     category: "Classiques",
     price: "Gratuit",
-    desc: "Tequila, jus d'orange, grenadine — dégradé rouge-orangé",
+    free: true,
+    desc: "Tequila, jus d'orange, grenadine",
     ingredients: ["tequila", "jus d'orange", "grenadine"]
   },
 
 ];
 
-/* ============================================================
-   STOCKS DE DÉPART
-   Liste complète des ingrédients disponibles au bar.
-   Les ingrédients NON présents dans cette liste et NON utilisés
-   dans les cocktails n'apparaissent pas dans la gestion.
-   Pour forcer un ingrédient à apparaître dans le panneau
-   même s'il n'est dans aucun cocktail, ajoute-le ici.
-============================================================ */
 const TOUS_LES_INGREDIENTS = [
-  "citron vert",
-  "citron jaune",
-  "sucre de canne",
-  "sirop de sucre",
-  "bailey",
-  "vin rouge",
-  "biere ruby",
-  "biere blonde",
-  "biere blanche",
-  "tequila",
-  "rhum blanc",
-  "rhum agricole",
-  "vodka",
-  "rhum arrangé",
-  /* ingrédients des cocktails pas encore en stock — à retirer si tu les reçois */
-  "menthe",
-  "eau gazeuse",
-  "lait de coco",
-  "jus d'ananas",
-  "jus d'orange",
-  "grenadine",
+  "citron vert","citron jaune","sucre de canne","sirop de sucre","bailey",
+  "vin rouge","biere ruby","biere blonde","biere blanche","tequila",
+  "rhum blanc","rhum agricole","vodka","rhum arrangé",
+  "menthe","eau gazeuse","lait de coco","jus d'ananas","jus d'orange","grenadine",
 ];
 
 /* ============================================================
-   CODE — NE PAS MODIFIER EN DESSOUS
+   STOCK
 ============================================================ */
 const STORAGE_KEY = "zaksbar_missing_v1";
-
-/* Charge les ingrédients manquants depuis localStorage */
 function loadMissing() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? new Set(JSON.parse(saved)) : new Set();
-  } catch(e) { return new Set(); }
+  try { const s = localStorage.getItem(STORAGE_KEY); return s ? new Set(JSON.parse(s)) : new Set(); }
+  catch(e) { return new Set(); }
 }
-
-/* Sauvegarde dans localStorage */
 function saveMissing() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...missing]));
-    showSaveBanner();
-  } catch(e) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...missing])); showSaveBanner(); } catch(e) {}
 }
-
 function showSaveBanner() {
-  const b = document.getElementById('save-banner');
-  if (!b) return;
-  b.classList.add('show');
-  clearTimeout(b._t);
-  b._t = setTimeout(() => b.classList.remove('show'), 2000);
+  const b = document.getElementById('save-banner'); if (!b) return;
+  b.classList.add('show'); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove('show'), 2000);
 }
-
 const missing = loadMissing();
-
-/* Tous les ingrédients à afficher = union stock + ingrédients des cocktails */
 function getAllIngredients() {
   const all = new Set(TOUS_LES_INGREDIENTS);
   COCKTAILS.forEach(c => c.ingredients.forEach(i => all.add(i)));
-  return [...all].sort((a, b) => a.localeCompare(b, 'fr'));
+  return [...all].sort((a,b) => a.localeCompare(b,'fr'));
 }
-
 function isAvailable(c) { return !c.ingredients.some(i => missing.has(i)); }
 function getMissing(c)   { return c.ingredients.filter(i => missing.has(i)); }
 
-function renderMenu() {
-  const order = ["Signatures", "Classiques", "Personnalisé"];
-  const categories = order.filter(cat => COCKTAILS.some(c => c.category === cat));
 
+
+/* ============================================================
+   PANNEAU PAIEMENT CLIENT
+============================================================ */
+function showPaymentInfo(total) {
+  document.getElementById('modal-form').style.display    = 'none';
+  document.getElementById('modal-payment').style.display = 'block';
+  document.getElementById('payment-total').textContent   = total + '€';
+  document.getElementById('paypal-btn').href = 'https://paypal.me/Zetun27/';
+}
+
+function hidePaymentInfo() {
+  document.getElementById('modal-payment').style.display = 'none';
+  document.getElementById('modal-form').style.display    = 'block';
+  closeOrder();
+}
+
+/* ============================================================
+   RENDU MENU
+============================================================ */
+function renderMenu() {
+  const order = ["Signatures","Classiques","Personnalisé"];
+  const categories = order.filter(cat => cat === "Personnalisé" || COCKTAILS.some(c => c.category === cat));
   let html = '';
   categories.forEach(cat => {
     html += `<div class="category-title">${cat}</div>`;
-
     if (cat === "Personnalisé") {
-      html += `<div class="perso-note">&#9670; Demandez au barman — cocktails sur mesure selon les ingrédients disponibles ce soir.</div>`;
+      html += `<div class="perso-note">&#9670; Demandez au barman — cocktails sur mesure selon les ingrédients disponibles.</div>`;
     } else {
       COCKTAILS.filter(c => c.category === cat).forEach(c => {
-        const avail = isAvailable(c);
-        const miss  = getMissing(c);
-        html += `
-          <div class="cocktail-row ${avail ? '' : 'unavail'}">
-            <div class="c-left">
-              <div class="c-name">${c.name}</div>
-              <div class="c-desc">${c.desc}</div>
-              ${!avail && miss.length ? `<div class="c-missing">&#9670; manque : ${miss.join(', ')}</div>` : ''}
-            </div>
-            <div class="c-right">
-              <div class="c-price">${c.price}</div>
-              ${!avail ? '<span class="unavail-tag">indispo</span>' : ''}
-            </div>
-          </div>`;
+        const avail = isAvailable(c); const miss = getMissing(c);
+        html += `<div class="cocktail-row ${avail?'':'unavail'}">
+          <div class="c-left">
+            <div class="c-name">${c.name}</div>
+            <div class="c-desc">${c.desc}</div>
+            ${!avail&&miss.length?`<div class="c-missing">&#9670; manque : ${miss.join(', ')}</div>`:''}
+          </div>
+          <div class="c-right">
+            <div class="c-price">${c.price}</div>
+            ${!avail?'<span class="unavail-tag">indispo</span>':''}
+          </div>
+        </div>`;
       });
     }
   });
   document.getElementById('menu-content').innerHTML = html;
 }
 
+/* ============================================================
+   MODAL COMMANDE
+============================================================ */
+let quantities = {};
+
+function openOrder() {
+  quantities = {};
+  COCKTAILS.forEach(c => quantities[c.name] = 0);
+  renderCocktailsGrid();
+  document.getElementById('order-nom').value = '';
+  document.getElementById('order-message').value = '';
+  document.getElementById('form-feedback').textContent = '';
+  document.getElementById('form-feedback').className = 'form-feedback';
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeOrder() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeOrder();
+}
+
+function renderCocktailsGrid() {
+  let html = '';
+  let grandTotal = 0;
+
+  COCKTAILS.forEach(c => {
+    const avail = isAvailable(c);
+    const qty = quantities[c.name] || 0;
+    const isPaid = !c.free && c.pricePerUnit && qty > 0;
+    const lineTotal = isPaid ? (c.pricePerUnit * qty) : 0;
+    if (isPaid) grandTotal += lineTotal;
+
+    html += `<div class="cocktail-selector ${qty>0?'selected':''} ${!avail?'disabled':''}">
+      <div>
+        <div class="cs-name">${c.name}</div>
+        ${!avail?'<div class="cs-unavail">Indisponible ce soir</div>':''}
+        ${isPaid ? `<div class="cs-price-tag">&#9670; ${qty} × ${c.price} = <strong>${lineTotal}€</strong></div>` : ''}
+      </div>
+      <div class="cs-qty">
+        <button class="qty-btn" onclick="changeQty('${c.name}',-1)">−</button>
+        <span class="qty-val">${qty}</span>
+        <button class="qty-btn" onclick="changeQty('${c.name}',1)">+</button>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('cocktails-grid').innerHTML = html;
+
+  // Affiche le total si > 0
+  const totalEl = document.getElementById('order-total');
+  if (grandTotal > 0) {
+    totalEl.innerHTML = `<span class="total-label">Total à payer</span><span class="total-amount">${grandTotal}€</span>`;
+    totalEl.style.display = 'flex';
+  } else {
+    totalEl.style.display = 'none';
+  }
+
+  // Bouton : si commande contient un cocktail payant → "Payer & Commander", sinon "Commander"
+  const hasPaid = grandTotal > 0;
+  const btn = document.getElementById('submit-btn');
+  btn.innerHTML = hasPaid ? `&#9670; Commander — ${grandTotal}€` : '&#9670; Envoyer la commande';
+  btn.dataset.haspaid = hasPaid ? '1' : '0';
+}
+
+function changeQty(name, delta) {
+  quantities[name] = Math.max(0, (quantities[name]||0) + delta);
+  renderCocktailsGrid();
+}
+
+/* ============================================================
+   ENVOI EMAIL
+============================================================ */
+async function submitOrder() {
+  const nom     = document.getElementById('order-nom').value.trim();
+  const message = document.getElementById('order-message').value.trim();
+  const fb      = document.getElementById('form-feedback');
+  const btn     = document.getElementById('submit-btn');
+
+  const items = COCKTAILS
+    .filter(c => isAvailable(c) && (quantities[c.name]||0) > 0)
+    .map(c => ({ name: c.name, qty: quantities[c.name], free: c.free, paypal: c.paypal, pricePerUnit: c.pricePerUnit || 0 }));
+
+  if (!nom) { fb.textContent = "Merci d'indiquer ton prénom."; fb.className = 'form-feedback err'; return; }
+  if (!items.length) { fb.textContent = 'Sélectionne au moins un cocktail.'; fb.className = 'form-feedback err'; return; }
+
+
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Envoi en cours...';
+  fb.textContent = '';
+
+  const now = new Date();
+  const heure = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'})
+    + ' à ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+
+  // Calcul du total
+  const total = items.reduce((sum, i) => sum + (i.pricePerUnit * i.qty), 0);
+  const totalTxt = total > 0 ? total + '€' : 'Gratuit';
+
+  // Détail de la commande ligne par ligne
+  const commandeTxt = items.map(i => {
+    if (i.pricePerUnit > 0) return i.name + ' x' + i.qty + ' (' + (i.pricePerUnit * i.qty) + '€)';
+    return i.name + ' x' + i.qty;
+  }).join(' | ');
+
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      nom:      nom,
+      commande: commandeTxt,
+      message:  message || 'Aucune',
+      heure:    heure,
+      total:    totalTxt,
+    });
+
+    btn.innerHTML   = '✓ Commande envoyée !';
+    fb.textContent  = total > 0 ? `Commande reçue ! Total : ${total}€` : 'On prépare ça pour toi 🍹';
+    fb.className    = 'form-feedback ok';
+    if (total > 0) {
+      setTimeout(() => showPaymentInfo(total), 600);
+    } else {
+      setTimeout(() => closeOrder(), 2400);
+    }
+
+  } catch(err) {
+    console.error(err);
+    btn.disabled   = false;
+    btn.innerHTML  = total > 0 ? `&#9670; Commander — ${total}€` : '&#9670; Envoyer la commande';
+    fb.textContent = "Erreur d'envoi — code : " + (err.status || err.text || 'inconnu');
+    fb.className   = 'form-feedback err';
+  }
+}
+
+/* ============================================================
+   ADMIN
+============================================================ */
 function renderAdmin() {
-  const search = (document.getElementById('ing-search') || { value: '' }).value.toLowerCase();
+  const search = (document.getElementById('ing-search')||{value:''}).value.toLowerCase();
   const all = getAllIngredients().filter(i => i.toLowerCase().includes(search));
   const count = missing.size;
-
   document.getElementById('status-line').innerHTML = count > 0
-    ? `<span class="count">${count} ingrédient${count > 1 ? 's' : ''} manquant${count > 1 ? 's' : ''}</span> — certains cocktails peuvent être indisponibles`
+    ? `<span class="count">${count} ingrédient${count>1?'s':''} manquant${count>1?'s':''}</span> — certains cocktails peuvent être indisponibles`
     : `<span class="ok">Tout est disponible ✓</span>`;
-
   let grid = '';
   all.forEach(ing => {
     const out = missing.has(ing);
-    grid += `<button class="ing-btn ${out ? 'out' : ''}" onclick="toggle('${ing.replace(/'/g, "\\'")}')">
-      <span class="ing-label">${ing}</span>
-      <span class="ing-dot"></span>
+    grid += `<button class="ing-btn ${out?'out':''}" onclick="toggle('${ing.replace(/'/g,"\\'")}')">
+      <span class="ing-label">${ing}</span><span class="ing-dot"></span>
     </button>`;
   });
   document.getElementById('ing-grid').innerHTML = grid;
 }
 
 function toggle(name) {
-  if (missing.has(name)) missing.delete(name);
-  else missing.add(name);
-  saveMissing();
-  renderAdmin();
-  renderMenu();
+  if (missing.has(name)) missing.delete(name); else missing.add(name);
+  saveMissing(); renderAdmin(); renderMenu();
 }
 
 function checkPassword() {
@@ -317,13 +650,10 @@ function checkPassword() {
   if (input.value === MOT_DE_PASSE) {
     document.getElementById('lock-screen').style.display   = 'none';
     document.getElementById('admin-content').style.display = 'block';
-    input.value = '';
-    error.textContent = '';
-    renderAdmin();
+    input.value = ''; error.textContent = ''; renderAdmin();
   } else {
     error.textContent = 'Mot de passe incorrect.';
-    input.classList.add('error');
-    input.value = '';
+    input.classList.add('error'); input.value = '';
     setTimeout(() => input.classList.remove('error'), 400);
   }
 }
@@ -336,14 +666,14 @@ function logout() {
 }
 
 function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) =>
-    b.classList.toggle('active', ['menu', 'admin'][i] === tab));
+  document.querySelectorAll('.tab-btn').forEach((b,i) =>
+    b.classList.toggle('active', ['menu','admin'][i] === tab));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
 }
 
-/* Init */
 renderMenu();
 </script>
+
 </body>
 </html>
