@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="Favicon.png">
+<link rel="icon" href="Favicon.ico">
 <title>Zak's Bar</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
@@ -373,7 +373,7 @@ const COCKTAILS = [
     price: "2€",                              // Prix affiché sur la carte
     pricePerUnit: 2,                           // Prix unitaire (nombre) pour le calcul du total
     free: false,                              // ← true = gratuit, false = payant
-    paypal: "https://paypal.me/Zetun27/", // Lien PayPal avec montant
+    paypal: "https://paypal.me/Zetun27/2EUR", // Lien PayPal avec montant
     desc: "Rhum blanc, lait de coco, jus d'ananas",
     ingredients: ["rhum blanc", "lait de coco", "jus d'ananas"]
   },
@@ -444,7 +444,7 @@ function showPaymentInfo(total) {
   document.getElementById('modal-form').style.display    = 'none';
   document.getElementById('modal-payment').style.display = 'block';
   document.getElementById('payment-total').textContent   = total + '€';
-  document.getElementById('paypal-btn').href = 'https://paypal.me/Zetun27/';
+  document.getElementById('paypal-btn').href = 'https://paypal.me/Zetun27/' + total + 'EUR';
 }
 
 function hidePaymentInfo() {
