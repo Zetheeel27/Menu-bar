@@ -90,6 +90,14 @@
   /* Note "Personnalisé" / message carte fermée */
   .perso-note { font-size: 12px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--accent-dim); font-style: italic; margin-top: 8px; padding: 8px 12px; border-left: 2px solid var(--accent-dim); }
 
+  /* Section V.I.P. */
+  .vip-section { margin-top: 2rem; padding: 16px; border: 1px solid var(--accent-dim); border-radius: 8px; background: var(--bg-card); }
+  .vip-title { text-align: center; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  .vip-item { display: flex; align-items: center; gap: 8px; padding: 7px 0; font-size: 14px; color: var(--text); border-bottom: 1px solid var(--text-faint); font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .vip-item:last-child { border-bottom: none; }
+  .vip-item::before { content: "♦"; color: var(--accent); font-size: 10px; }
+  .vip-empty { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; text-align: center; }
+
   /* ============================================================
      BOUTON COMMANDER FLOTTANT
   ============================================================ */
@@ -305,6 +313,12 @@
       </div>
     </div>
     <div id="menu-content"></div>
+
+    <!-- Section V.I.P. (gérée dans config.js) -->
+    <div id="vip-section" class="vip-section" style="display:none">
+      <div class="vip-title" id="vip-title"></div>
+      <div id="vip-list"></div>
+    </div>
   </div>
   <button class="order-fab" onclick="openOrder()">&#9670; Commander</button>
 </div>
@@ -413,7 +427,6 @@
         <div class="admin-title">Gestion des stocks</div>
         <button class="logout-btn" onclick="logout()">Se déconnecter</button>
       </div>
-      <p class="admin-hint">Clique sur un ingrédient pour le marquer <strong style="color:var(--danger-text)">indisponible</strong>. Les éléments concernés sont automatiquement grisés sur la carte. Sauvegarde <strong style="color:var(--success)">automatique</strong>.</p>
       <div class="save-banner" id="save-banner">&#10003; Modifications sauvegardées</div>
       <div class="status-line" id="status-line"></div>
       <input class="search-input" id="ing-search" type="text" placeholder="Rechercher un ingrédient..." oninput="renderAdmin()">
@@ -496,6 +509,38 @@ function isAvailable(item) {
 // Liste des ingrédients manquants pour un article donné
 function getMissing(item) {
   return item.ingredients.filter(ing => missing.has(ing));
+}
+
+// Convertit "HH:MM" en nombre de minutes depuis minuit
+function parseHeure(hhmm) {
+  const parts = hhmm.split(':');
+  return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+}
+
+// Vérifie si l'heure actuelle est comprise dans une plage horaire.
+// Gère le cas où la fermeture est après minuit (ex: 18:00 → 02:00).
+function isWithinHours(horaires) {
+  const now = new Date();
+  const current = now.getHours() * 60 + now.getMinutes();
+  const debut = parseHeure(horaires.debut);
+  const fin   = parseHeure(horaires.fin);
+
+  if (debut <= fin) {
+    return current >= debut && current < fin;
+  } else {
+    // La plage traverse minuit (ex: 18:00 → 02:00)
+    return current >= debut || current < fin;
+  }
+}
+
+// Le bar est-il ouvert ? (mode auto = horaires, mode manuel = interrupteur)
+function isBarOpen() {
+  return CONFIG.HORAIRES_AUTO_ACTIF ? isWithinHours(CONFIG.BAR_HORAIRES) : CONFIG.BAR_OUVERT;
+}
+
+// Le restaurant est-il ouvert ?
+function isRestaurantOpen() {
+  return CONFIG.HORAIRES_AUTO_ACTIF ? isWithinHours(CONFIG.RESTAURANT_HORAIRES) : CONFIG.RESTAURANT_OUVERT;
 }
 
 
@@ -636,9 +681,30 @@ function renderClosedMessage(section) {
   return '<div class="perso-note">' + texte + '</div>';
 }
 
+// Affiche la liste V.I.P. en bas de la carte, si activée dans config.js
+function renderVIP() {
+  const section = document.getElementById('vip-section');
+  if (!CONFIG.VIP_ACTIF) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  document.getElementById('vip-title').textContent = CONFIG.VIP_TITLE;
+
+  const listEl = document.getElementById('vip-list');
+  if (!CONFIG.VIP_LIST.length) {
+    listEl.innerHTML = '<div class="vip-empty">Aucun V.I.P. pour le moment</div>';
+    return;
+  }
+  listEl.innerHTML = CONFIG.VIP_LIST.map(name =>
+    '<div class="vip-item">' + name + '</div>'
+  ).join('');
+}
+
 // Affiche la carte (Boissons ou Restaurant selon l'onglet actif)
 function renderMenu() {
   renderMessageDuJour();
+  renderVIP();
 
   // Masque complètement l'onglet Restaurant si désactivé
   const subtabs = document.querySelector('.menu-subtabs');
@@ -647,11 +713,11 @@ function renderMenu() {
 
   let html;
   if (currentSection === 'boissons') {
-    html = CONFIG.BAR_OUVERT
+    html = isBarOpen()
       ? renderItemsList(CONFIG.COCKTAILS, ["Signatures","Classiques","V.I.P.","Personnalisé"])
       : renderClosedMessage('boissons');
   } else {
-    html = CONFIG.RESTAURANT_OUVERT
+    html = isRestaurantOpen()
       ? renderItemsList(CONFIG.PLATS, ["Signatures","Classiques","Tajines","Personnalisé"])
       : renderClosedMessage('resto');
   }
@@ -669,10 +735,10 @@ let tipAmount  = 0;    // pourboire en €
 // Articles commandables : cocktails (si le bar est ouvert)
 // + plats (si le restaurant est actif ET ouvert)
 function getOrderableItems() {
-  const drinks = CONFIG.BAR_OUVERT
+  const drinks = isBarOpen()
     ? CONFIG.COCKTAILS.map(c => ({ ...c, section: 'Boissons' }))
     : [];
-  const food = (CONFIG.RESTAURANT_ACTIF && CONFIG.RESTAURANT_OUVERT)
+  const food = (CONFIG.RESTAURANT_ACTIF && isRestaurantOpen())
     ? CONFIG.PLATS.map(c => ({ ...c, section: 'Restaurant' }))
     : [];
   return [...drinks, ...food];
@@ -759,7 +825,7 @@ function renderOrderForm() {
     html += '<div class="cocktail-selector ' + (qty > 0 ? 'selected' : '') + ' ' + (!avail ? 'disabled' : '') + '">'
       + '<div>'
         + '<div class="cs-name">' + item.name + '</div>'
-        + (!avail ? '<div class="cs-unavail">Indisponible ce soir</div>' : '')
+        + (!avail ? '<div class="cs-unavail">Indisponible</div>' : '')
         + (isPaid ? '<div class="cs-price-tag">&#9670; ' + qty + ' × ' + item.price + ' = <strong>' + lineTotal + '€</strong></div>' : '')
       + '</div>'
       + '<div class="cs-qty">'
@@ -1082,6 +1148,12 @@ function switchTab(tab) {
 document.getElementById('site-title').textContent   = CONFIG.BAR_NAME;
 document.getElementById('site-tagline').textContent = CONFIG.BAR_TAGLINE;
 renderMenu();
+
+// En mode horaires automatiques, on rafraîchit la carte chaque minute
+// pour que l'ouverture/fermeture se mette à jour sans recharger la page.
+if (CONFIG.HORAIRES_AUTO_ACTIF) {
+  setInterval(renderMenu, 60000);
+}
 </script>
 
 </body>
