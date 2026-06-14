@@ -4,71 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zak's Bar</title>
+
+<!-- Librairie d'envoi d'emails (commandes) -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
+<!-- ============================================================
+     Fichier de configuration — TOUTES les données modifiables
+     (cocktails, plats, prix, mots de passe, horaires...) sont
+     dans config.js, à placer dans le même dossier que ce fichier.
+============================================================ -->
+<script src="config.js"></script>
 
 <style>
-
-    .stats-box{
-  background:var(--bg);
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:14px;
-  margin-bottom:12px;
-}
-
-.stats-title{
-  font-size:11px;
-  color:var(--text-muted);
-  text-transform:uppercase;
-  letter-spacing:.15em;
-  margin-bottom:10px;
-}
-
-.stats-value{
-  font-size:28px;
-  color:var(--accent);
-}
-
-.stats-row{
-  display:flex;
-  justify-content:space-between;
-  padding:8px 0;
-  border-bottom:1px solid var(--border);
-}
-
-.stats-row:last-child{
-  border-bottom:none;
-}
-
-.stats-name{
-  color:var(--text);
-}
-
-.stats-count{
-  color:var(--accent);
-}
-    details {
-  margin-bottom: 15px;
-}
-
-summary {
-  cursor: pointer;
-  list-style: none;
-}
-
-summary::-webkit-details-marker {
-  display: none;
-}
-
-summary::after {
-  content: " ▼";
-  color: var(--accent);
-}
-
-details[open] summary::after {
-  content: " ▲";
-}
   :root {
     --accent:      #c8a96e;
     --accent-dim:  #a07840;
@@ -87,7 +34,9 @@ details[open] summary::after {
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Georgia','Times New Roman',serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  /* ---- Tabs ---- */
+  /* ============================================================
+     ONGLETS PRINCIPAUX (Carte / Gestion)
+  ============================================================ */
   .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-card); position: sticky; top: 0; z-index: 10; }
   .tab-btn { flex: 1; padding: 14px 12px; background: none; border: none; color: var(--text-muted); font-family: 'Georgia',serif; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
   .tab-btn:hover { color: var(--text); }
@@ -95,15 +44,25 @@ details[open] summary::after {
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* ---- Menu ---- */
+  /* ============================================================
+     CARTE (vue client)
+  ============================================================ */
   .menu-wrap { max-width: 640px; margin: 0 auto; padding: 0 1rem 6rem; }
   .menu-header { text-align: center; padding: 2.5rem 1rem 1.5rem; }
   .bar-name { font-size: 28px; font-weight: 400; letter-spacing: 0.25em; color: var(--accent); }
   .bar-tagline { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-top: 6px; }
+
+  /* Message du jour */
+  .message-jour {
+    margin-top: 14px; padding: 10px 16px; border: 1px solid var(--accent-dim);
+    border-radius: 8px; text-align: center; color: var(--accent);
+    font-size: 13px; font-family: 'Helvetica Neue',Arial,sans-serif;
+  }
+
   .menu-divider { display: flex; align-items: center; gap: 10px; margin: 1.5rem 0 0; color: var(--text-faint); font-size: 11px; }
   .menu-divider::before, .menu-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* ---- Sous-onglets Boissons / Restaurant ---- */
+  /* Sous-onglets Boissons / Restaurant */
   .menu-subtabs { display: flex; gap: 8px; justify-content: center; margin: 1.5rem 0 0.5rem; }
   .subtab-btn {
     background: none; border: 1px solid var(--border); border-radius: 50px;
@@ -113,6 +72,7 @@ details[open] summary::after {
   }
   .subtab-btn:hover { border-color: var(--accent-dim); color: var(--text); }
   .subtab-btn.active { border-color: var(--accent); color: var(--accent); background: #1c1810; }
+
   .category-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent-dim); margin: 2rem 0 1rem; padding-bottom: 8px; border-bottom: 1px solid var(--text-faint); }
   .cocktail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--text-faint); gap: 12px; transition: opacity 0.2s; }
   .cocktail-row:last-child { border-bottom: none; }
@@ -127,74 +87,37 @@ details[open] summary::after {
   .cocktail-row.unavail .c-price { color: var(--text-muted); }
   .unavail-tag { display: block; font-size: 9px; font-family: 'Helvetica Neue',Arial,sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--danger-text); margin-top: 4px; }
 
+  /* Note "Personnalisé" / message carte fermée */
   .perso-note { font-size: 12px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--accent-dim); font-style: italic; margin-top: 8px; padding: 8px 12px; border-left: 2px solid var(--accent-dim); }
 
-
-  /* ---- Panneau paiement ---- */
-  .payment-total-box { text-align: center; padding: 20px; background: var(--bg); border: 1px solid var(--accent-dim); border-radius: 8px; margin-bottom: 1.5rem; }
-  .payment-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; font-family: 'Helvetica Neue',Arial,sans-serif; }
-  .payment-amount { font-size: 42px; color: var(--accent); font-family: 'Georgia',serif; line-height: 1; }
-  .payment-options { display: flex; flex-direction: column; gap: 10px; }
-  .payment-option-title { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; font-family: 'Helvetica Neue',Arial,sans-serif; }
-  .payment-option-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
-  .poc-icon { color: var(--accent); font-size: 10px; flex-shrink: 0; }
-  .poc-content { flex: 1; }
-  .poc-name { font-size: 14px; color: var(--text); margin-bottom: 2px; }
-  .poc-desc { font-size: 11px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; }
-  .poc-btn { background: var(--accent); color: var(--bg); border: none; border-radius: 5px; padding: 7px 16px; font-family: 'Georgia',serif; font-size: 12px; letter-spacing: 0.08em; cursor: pointer; text-decoration: none; white-space: nowrap; transition: background 0.2s; }
-  .poc-btn:hover { background: #dfc080; }
-  .poc-btn:disabled { opacity: 0.6; cursor: default; }
-  .poc-tag { font-size: 11px; color: var(--accent-dim); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; white-space: nowrap; }
-  .payment-note { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; line-height: 1.5; padding: 10px 12px; border-left: 2px solid var(--accent-dim); margin-top: 4px; }
-
-  /* ---- Bouton Commander flottant ---- */
+  /* ============================================================
+     BOUTON COMMANDER FLOTTANT
+  ============================================================ */
   .order-fab {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    border-radius: 50px;
-    padding: 14px 32px;
-    font-family: 'Georgia',serif;
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: var(--bg); border: none; border-radius: 50px;
+    padding: 14px 32px; font-family: 'Georgia',serif; font-size: 13px; font-weight: 400;
+    letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer;
     box-shadow: 0 4px 24px rgba(200,169,110,0.25);
     transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-    z-index: 100;
-    white-space: nowrap;
+    z-index: 100; white-space: nowrap;
   }
   .order-fab:hover { background: #dfc080; box-shadow: 0 6px 32px rgba(200,169,110,0.4); transform: translateX(-50%) translateY(-2px); }
   .order-fab:active { transform: translateX(-50%) translateY(0); }
 
-  /* ---- Modal overlay ---- */
+  /* ============================================================
+     MODAL DE COMMANDE
+  ============================================================ */
   .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.75);
-    z-index: 200;
-    align-items: flex-end;
-    justify-content: center;
-    backdrop-filter: blur(3px);
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    z-index: 200; align-items: flex-end; justify-content: center; backdrop-filter: blur(3px);
   }
   .modal-overlay.open { display: flex; }
 
   .modal {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-bottom: none;
-    border-radius: 16px 16px 0 0;
-    width: 100%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 2rem 1.5rem 2.5rem;
-    animation: slideUp 0.3s ease;
+    background: var(--bg-card); border: 1px solid var(--border); border-bottom: none;
+    border-radius: 16px 16px 0 0; width: 100%; max-width: 600px; max-height: 90vh;
+    overflow-y: auto; padding: 2rem 1.5rem 2.5rem; animation: slideUp 0.3s ease;
   }
   @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -203,7 +126,7 @@ details[open] summary::after {
   .modal-close { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px 8px; line-height: 1; }
   .modal-close:hover { color: var(--text); }
 
-  /* ---- Formulaire ---- */
+  /* Formulaire */
   .form-group { margin-bottom: 1.25rem; }
   .form-label { display: block; font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
   .form-input, .form-textarea {
@@ -215,7 +138,7 @@ details[open] summary::after {
   .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
   .form-textarea { resize: vertical; min-height: 80px; }
 
-  /* ---- Cocktails sélecteur ---- */
+  /* Sélecteur d'articles (cocktails / plats) */
   .cocktails-grid { display: flex; flex-direction: column; gap: 8px; }
   .cocktail-selector {
     display: flex; align-items: center; justify-content: space-between;
@@ -226,12 +149,13 @@ details[open] summary::after {
   .cocktail-selector.disabled { opacity: 0.35; pointer-events: none; }
   .cs-name { font-size: 14px; color: var(--text); flex: 1; }
   .cs-unavail { font-size: 10px; color: var(--danger-text); font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .cs-price-tag { font-size: 10px; color: var(--accent-dim); font-family: 'Helvetica Neue',Arial,sans-serif; margin-top: 3px; }
 
-  /* ---- Sections dans le formulaire de commande ---- */
+  /* Sections (Boissons / Restaurant) dans le formulaire de commande */
   .order-section-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin: 14px 0 6px; font-family: 'Helvetica Neue',Arial,sans-serif; }
   .order-section-title:first-child { margin-top: 0; }
 
-  /* ---- Pourboire ---- */
+  /* Pourboire */
   .tip-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .tip-btn {
     flex: 1; padding: 9px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
@@ -241,10 +165,12 @@ details[open] summary::after {
   .tip-btn:hover { border-color: var(--accent-dim); color: var(--text); }
   .tip-btn.active { border-color: var(--accent); color: var(--accent); background: #1c1810; }
 
+  /* Total */
   #order-total { font-family: 'Helvetica Neue',Arial,sans-serif; }
   .total-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
   .total-amount { font-size: 20px; color: var(--accent); font-family: 'Georgia',serif; }
-  .cs-price-tag { font-size: 10px; color: var(--accent-dim); font-family: 'Helvetica Neue',Arial,sans-serif; margin-top: 3px; }
+
+  /* Quantité +/- */
   .cs-qty { display: flex; align-items: center; gap: 8px; }
   .qty-btn {
     width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border);
@@ -255,7 +181,7 @@ details[open] summary::after {
   .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
   .qty-val { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 14px; color: var(--text); width: 20px; text-align: center; }
 
-  /* ---- Bouton envoyer ---- */
+  /* Bouton principal du formulaire */
   .submit-btn {
     width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 8px;
     color: var(--bg); font-family: 'Georgia',serif; font-size: 14px; letter-spacing: 0.12em;
@@ -269,7 +195,27 @@ details[open] summary::after {
   .form-feedback.ok  { color: var(--success); }
   .form-feedback.err { color: var(--danger-text); }
 
-  /* ---- Lock screen ---- */
+  /* ============================================================
+     PANNEAU DE RÈGLEMENT (après envoi d'une commande payante)
+  ============================================================ */
+  .payment-total-box { text-align: center; padding: 20px; background: var(--bg); border: 1px solid var(--accent-dim); border-radius: 8px; margin-bottom: 1.5rem; }
+  .payment-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .payment-amount { font-size: 42px; color: var(--accent); font-family: 'Georgia',serif; line-height: 1; }
+  .payment-options { display: flex; flex-direction: column; gap: 10px; }
+  .payment-option-title { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .payment-option-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+  .poc-icon { color: var(--accent); font-size: 10px; flex-shrink: 0; }
+  .poc-content { flex: 1; }
+  .poc-name { font-size: 14px; color: var(--text); margin-bottom: 2px; }
+  .poc-desc { font-size: 11px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; }
+  .poc-btn { background: var(--accent); color: var(--bg); border: none; border-radius: 5px; padding: 7px 16px; font-family: 'Georgia',serif; font-size: 12px; letter-spacing: 0.08em; cursor: pointer; text-decoration: none; white-space: nowrap; transition: background 0.2s; }
+  .poc-btn:hover { background: #dfc080; }
+  .poc-btn:disabled { opacity: 0.6; cursor: default; }
+  .payment-note { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; line-height: 1.5; padding: 10px 12px; border-left: 2px solid var(--accent-dim); margin-top: 4px; }
+
+  /* ============================================================
+     ÉCRAN DE CONNEXION (Gestion)
+  ============================================================ */
   .lock-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; padding: 2rem; }
   .lock-icon { font-size: 20px; color: var(--accent); margin-bottom: 1.5rem; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'Helvetica Neue',Arial,sans-serif; }
   .lock-title { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.25rem; }
@@ -281,7 +227,9 @@ details[open] summary::after {
   .lock-btn:hover { background: var(--accent); color: var(--bg); }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
-  /* ---- Admin ---- */
+  /* ============================================================
+     PANNEAU GESTION
+  ============================================================ */
   .admin-wrap { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
   .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .admin-title { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
@@ -296,6 +244,14 @@ details[open] summary::after {
   .search-input { width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 14px; padding: 10px 14px; margin-bottom: 1rem; outline: none; transition: border-color 0.2s; }
   .search-input:focus { border-color: var(--accent); }
   .search-input::placeholder { color: var(--text-muted); }
+
+  /* Sections repliables (Boissons / Nourriture) */
+  details { margin-bottom: 12px; }
+  details summary { display: block; cursor: pointer; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: " ▾"; color: var(--accent); }
+  details[open] summary::after { content: " ▴"; }
+
   .ing-section-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent-dim); margin: 1.25rem 0 0.6rem; font-family: 'Helvetica Neue',Arial,sans-serif; }
   .ing-section-title:first-of-type { margin-top: 0; }
   .ing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 7px; }
@@ -308,7 +264,7 @@ details[open] summary::after {
   .ing-btn.out .ing-dot { background: var(--danger); }
   .ing-empty { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; padding: 6px 0; }
 
-  /* ---- Caisse / Recettes ---- */
+  /* Caisse / Recettes */
   .cash-section { border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem; }
   .earnings-total-box { text-align: center; padding: 18px; background: var(--bg); border: 1px solid var(--accent-dim); border-radius: 8px; margin: 1rem 0 1.25rem; }
   .earnings-input-row { display: flex; gap: 8px; margin-bottom: 1rem; }
@@ -321,24 +277,28 @@ details[open] summary::after {
   .earnings-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 0 4px; transition: color 0.15s; }
   .earnings-del:hover { color: var(--danger-text); }
   .earnings-empty { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; text-align: center; padding: 10px 0; }
-
 </style>
 </head>
 <body>
 
+<!-- ================================================================
+     ONGLETS PRINCIPAUX
+================================================================ -->
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('menu')">&#9670; Carte</button>
   <button class="tab-btn" onclick="switchTab('admin')">&#9670; Gestion</button>
 </div>
 
-<!-- ======== CARTE ======== -->
+<!-- ================================================================
+     CARTE — vue client
+================================================================ -->
 <div id="panel-menu" class="panel active">
   <div class="menu-wrap">
     <div class="menu-header">
-<div class="bar-name" id="main-title">ZAK'S BAR</div>
-<div class="bar-tagline" id="main-tagline">
-  Cocktails faits maison
-</div>      <div class="menu-divider">&#9670;</div>
+      <div class="bar-name" id="site-title">ZAK'S BAR</div>
+      <div class="bar-tagline" id="site-tagline">Cocktails faits maison</div>
+      <div id="message-jour" class="message-jour" style="display:none"></div>
+      <div class="menu-divider">&#9670;</div>
       <div class="menu-subtabs">
         <button class="subtab-btn active" onclick="switchMenuSection('boissons')">&#9670; Boissons</button>
         <button class="subtab-btn" onclick="switchMenuSection('resto')">&#9670; Restaurant</button>
@@ -349,7 +309,9 @@ details[open] summary::after {
   <button class="order-fab" onclick="openOrder()">&#9670; Commander</button>
 </div>
 
-<!-- ======== MODAL COMMANDE ======== -->
+<!-- ================================================================
+     MODAL DE COMMANDE
+================================================================ -->
 <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
   <div class="modal" id="modal">
 
@@ -389,7 +351,7 @@ details[open] summary::after {
       <div class="form-feedback" id="form-feedback"></div>
     </div>
 
-    <!-- ÉTAPE 2 : Règlement (affiché après envoi si commande payante) -->
+    <!-- ÉTAPE 2 : Règlement (affiché si la commande est payante) -->
     <div id="modal-payment" style="display:none">
       <div class="modal-header">
         <div class="modal-title">&#9670; Règlement</div>
@@ -431,9 +393,11 @@ details[open] summary::after {
   </div>
 </div>
 
-
-<!-- ======== GESTION ======== -->
+<!-- ================================================================
+     GESTION — accès barman
+================================================================ -->
 <div id="panel-admin" class="panel">
+
   <div id="lock-screen" class="lock-screen">
     <div class="lock-icon">&#9670; Accès barman &#9670;</div>
     <div class="lock-title">Mot de passe requis</div>
@@ -442,47 +406,31 @@ details[open] summary::after {
     <div class="lock-error" id="pw-error"></div>
     <button class="lock-btn" onclick="checkPassword()">Entrer</button>
   </div>
+
   <div id="admin-content" style="display:none">
     <div class="admin-wrap">
       <div class="admin-header">
         <div class="admin-title">Gestion des stocks</div>
         <button class="logout-btn" onclick="logout()">Se déconnecter</button>
       </div>
+      <p class="admin-hint">Clique sur un ingrédient pour le marquer <strong style="color:var(--danger-text)">indisponible</strong>. Les éléments concernés sont automatiquement grisés sur la carte. Sauvegarde <strong style="color:var(--success)">automatique</strong>.</p>
       <div class="save-banner" id="save-banner">&#10003; Modifications sauvegardées</div>
       <div class="status-line" id="status-line"></div>
       <input class="search-input" id="ing-search" type="text" placeholder="Rechercher un ingrédient..." oninput="renderAdmin()">
 
-<details open>
-  <summary class="ing-section-title">
-    &#9670; Boissons
-  </summary>
+      <!-- Ingrédients Boissons -->
+      <details open>
+        <summary class="ing-section-title">&#9670; Boissons</summary>
+        <div class="ing-grid" id="ing-grid-boissons"></div>
+      </details>
 
-  <div class="ing-grid"
-  id="ing-grid-boissons"></div>
-</details>
+      <!-- Ingrédients Nourriture (masqué si RESTAURANT_ACTIF = false) -->
+      <details id="food-details" open>
+        <summary class="ing-section-title">&#9670; Nourriture / Plats</summary>
+        <div class="ing-grid" id="ing-grid-nourriture"></div>
+      </details>
 
-<details open id="food-details">
-  <summary
-  class="ing-section-title"
-  id="ing-section-nourriture-title">
-    &#9670; Nourriture / Plats
-  </summary>
-
-  <div class="ing-grid"
-  id="ing-grid-nourriture"></div>
-</details>
       <!-- ======== CAISSE / RECETTES ======== -->
-       <div class="cash-section">
-
-  <div class="admin-header">
-    <div class="admin-title">
-      Statistiques
-    </div>
-  </div>
-
-  <div id="stats-container"></div>
-
-</div>
       <div class="cash-section">
         <div class="admin-header">
           <div class="admin-title">Caisse — recettes</div>
@@ -506,401 +454,248 @@ details[open] summary::after {
   </div>
 </div>
 
+
 <script>
-/* ============================================================
-   CONFIG EMAILJS
-============================================================ */
-const EMAILJS_PUBLIC_KEY  = "ZL8SCkq8GOwQQ7aGy";
-const EMAILJS_SERVICE_ID  = "service_csu2lu3";
-const EMAILJS_TEMPLATE_ID = "template_chhlm1c";
+/* ════════════════════════════════════════════════════════════
+   MOTEUR DU SITE — ZAK'S BAR
+   ════════════════════════════════════════════════════════════
+   Toutes les données modifiables (cocktails, plats, prix,
+   mots de passe, horaires...) sont dans config.js (objet CONFIG).
+   Ce fichier gère uniquement l'affichage, les calculs et les
+   formulaires — tu ne devrais pas avoir besoin d'y toucher.
+════════════════════════════════════════════════════════════ */
 
-emailjs.init(EMAILJS_PUBLIC_KEY);
+/* ----------------------------------------------------------
+   0. INITIALISATION
+---------------------------------------------------------- */
+emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
 
-/* ============================================================
-   MOT DE PASSE BARMAN
-============================================================ */
-const MOT_DE_PASSE = "Menubar03%";
 
-/* ============================================================
-   COCKTAILS
-============================================================ */
-const COCKTAILS = [
+/* ----------------------------------------------------------
+   1. OUTILS / HELPERS
+---------------------------------------------------------- */
 
-  /* -------------------------------------------------------
-     Piña Colada — payant
-     Pour rendre GRATUIT : mets free: true  (ligne ci-dessous)
-     Pour remettre PAYANT : mets free: false
-  ------------------------------------------------------- */
-  {
-    name: "Piña Colada",
-    category: "Signatures",
-    price: "2€",
-    pricePerUnit: 2,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/2EUR",
-    desc: "Rhum blanc, lait de coco, jus d'ananas",
-    ingredients: ["rhum blanc", "lait de coco", "jus d'ananas"]
-  },
+// Construit un lien PayPal pour un montant donné (en euros)
+function getPaypalUrl(amount) {
+  return 'https://paypal.me/' + CONFIG.PAYPAL_USERNAME + '/' + amount + 'EUR';
+}
 
-  /* -------------------------------------------------------
-     Mojito — payant
-  ------------------------------------------------------- */
-  {
-    name: "Mojito",
-    category: "Classiques",
-    price: "2€",
-    pricePerUnit: 2,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/2EUR",
-    desc: "Rhum blanc, menthe fraîche, citron vert, sirop de sucre, eau gazeuse",
-    ingredients: ["rhum blanc", "menthe", "citron vert", "sirop de sucre", "eau gazeuse"]
-  },
+// Un article est gratuit si pricePerUnit est absent, nul ou 0
+function isFree(item) {
+  return !item.pricePerUnit || item.pricePerUnit <= 0;
+}
 
-  /* -------------------------------------------------------
-     Tequila Sunrise — payant
-  ------------------------------------------------------- */
-  {
-    name: "Tequila Sunrise",
-    category: "V.I.P.",
-    price: "2€",
-    pricePerUnit: 2,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/2EUR",
-    desc: "Tequila, jus d'orange, grenadine",
-    ingredients: ["tequila", "jus d'orange", "grenadine"]
-  },
+// Un article est disponible si :
+//  - il n'est PAS dans CONFIG.DISABLED_PRODUCTS
+//  - aucun de ses ingrédients n'est marqué "manquant" dans le stock
+function isAvailable(item) {
+  if (CONFIG.DISABLED_PRODUCTS.includes(item.name)) return false;
+  return !item.ingredients.some(ing => missing.has(ing));
+}
 
-  /* -------------------------------------------------------
-     Mojito Fraise — payant
-  ------------------------------------------------------- */
-  {
-    name: "Mojito Fraise",
-    category: "V.I.P.",
-    price: "2€",
-    pricePerUnit: 2,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/2EUR",
-    desc: "Rhum blanc, fraise fraîche, menthe, citron vert, sirop de sucre, eau gazeuse",
-    ingredients: ["rhum blanc", "fraise", "menthe", "citron vert", "sirop de sucre", "eau gazeuse"]
-  },
+// Liste des ingrédients manquants pour un article donné
+function getMissing(item) {
+  return item.ingredients.filter(ing => missing.has(ing));
+}
 
-  /* -------------------------------------------------------
-     Jäger Bomb — payant
-  ------------------------------------------------------- */
-  {
-    name: "Jäger Bomb",
-    category: "V.I.P.",
-    price: "2€",
-    pricePerUnit: 2,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/2EUR",
-    desc: "Jägermeister plongé dans une boisson énergisante",
-    ingredients: ["jägermeister", "boisson énergisante"]
-  },
 
-];
+/* ----------------------------------------------------------
+   2. STOCK (ingrédients indisponibles)
+   Sauvegardé dans le navigateur (localStorage) — propre à
+   l'appareil utilisé pour la gestion.
+---------------------------------------------------------- */
+const STOCK_STORAGE_KEY = "zaksbar_missing_v1";
 
-/* ============================================================
-   RESTAURANT ACTIVATION
-   ============================================================
-   true  → l'onglet "Restaurant" est visible sur la carte et
-           dans le formulaire de commande
-   false → seule la partie "Boissons" est affichée (mode bar)
-============================================================ */
-const RESTAURANT_ACTIF = true;
-
-/* ============================================================
-   PLATS (RESTAURANT)
-   Même structure que COCKTAILS.
-============================================================ */
-const PLATS = [
-
-  /* ---- Signatures ---- */
-  {
-    name: "Tasty Crousty",
-    category: "Signatures",
-    price: "8€",
-    pricePerUnit: 8,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/8EUR",
-    desc: "Riz, tenders, sauce secrète, oignons frits",
-    ingredients: ["riz", "tenders", "creme fraiche", "sauce soja sucrée", "sauce aigre douce", "oignons frits", "miel"]
-  },
-  {
-    name: "Saumon Teriyaki",
-    category: "Signatures",
-    price: "8€",
-    pricePerUnit: 8,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/8EUR",
-    desc: "Pavé de saumon laqué à la sauce teriyaki, riz, graines de sésame, Avocats",
-    ingredients: ["saumon", "sauce teriyaki", "riz", "graines de sésame", "avocats"]
-  },
-
-  /* ---- Classiques ---- */
-  {
-    name: "Pâtes Carbonara",
-    category: "Classiques",
-    price: "5€",
-    pricePerUnit: 5,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/5EUR",
-    desc: "Pâtes, lardons, crème fraîche, parmesan, poivre",
-    ingredients: ["pâtes", "lardons", "crème fraîche", "parmesan", "poivre"]
-  },
-  {
-    name: "Pâtes Saumon",
-    category: "Classiques",
-    price: "5€",
-    pricePerUnit: 5,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/5EUR",
-    desc: "Pâtes, saumon fumé, crème fraîche, citron,",
-    ingredients: ["pâtes", "saumon fumé", "crème fraîche", "citron"]
-  },
-
-  /* ---- Tajines ---- */
-  {
-    name: "Tajine Poulet Olives Pommes de terre",
-    category: "Tajines",
-    price: "8€",
-    pricePerUnit: 8,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/8EUR",
-    desc: "Poulet mijoté, olives, pommes de terre, citron confit, épices",
-    ingredients: ["poulet", "olives", "pommes de terre", "citron confit", "épices tajine", "oignon"]
-  },
-  {
-    name: "Tajine Haricots",
-    category: "Tajines",
-    price: "8€",
-    pricePerUnit: 8,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/8EUR",
-    desc: "Haricots verts mijotés à la tomate, oignon, épices",
-    ingredients: ["haricots verts", "tomate", "oignon", "ail", "épices tajine", "huile d'olive"]
-  },
-  {
-    name: "Tajine Pruneaux",
-    category: "Tajines",
-    price: "8€",
-    pricePerUnit: 8,
-    free: false,
-    paypal: "https://paypal.me/Zetun27/8EUR",
-    desc: "Viande mijotée aux pruneaux, amandes, miel, épices",
-    ingredients: ["viande", "pruneaux", "amandes", "oignon", "miel", "épices tajine"]
-  },
-
-];
-
-/* ============================================================
-   INGRÉDIENTS — listes de base
-   Les ingrédients utilisés dans COCKTAILS / PLATS sont ajoutés
-   automatiquement à ces listes pour la gestion des stocks.
-============================================================ */
-const INGREDIENTS_BOISSONS = [
-  "citron vert","citron jaune","sucre de canne","sirop de sucre","bailey",
-  "vin rouge","biere ruby","biere blonde","biere blanche","tequila",
-  "rhum blanc","rhum agricole","vodka","rhum arrangé",
-  "menthe","eau gazeuse","lait de coco","jus d'ananas","jus d'orange","grenadine",
-  "fraise","jägermeister","boisson énergisante",
-];
-
-const INGREDIENTS_NOURRITURE = [
-    "riz", "tenders", "creme fraiche", "sauce soja sucrée", 
-    "sauce aigre douce", "oignons frits", "avocats", "lardons", 
-    "parmesan", "oeuf", "poivre", "saumon fumé", "citron", "aneth", 
-    "poulet", "olives", "pommes de terre", "citron confit", "épices tajine", 
-    "oignon", "tomate", "ail", "huile d'olive", "pruneaux", 
-    "amandes", "miel", "haricots verts",
-  // Ajoute ici des ingrédients de stock même s'ils ne sont pas (encore)
-  // utilisés dans un plat — ils apparaîtront dans la gestion.
-];
-
-/* ============================================================
-   STOCK
-============================================================ */
-const STORAGE_KEY = "zaksbar_missing_v1";
 function loadMissing() {
-  try { const s = localStorage.getItem(STORAGE_KEY); return s ? new Set(JSON.parse(s)) : new Set(); }
-  catch(e) { return new Set(); }
+  try {
+    const saved = localStorage.getItem(STOCK_STORAGE_KEY);
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  } catch(e) { return new Set(); }
 }
+
 function saveMissing() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...missing])); showSaveBanner(); } catch(e) {}
+  try {
+    localStorage.setItem(STOCK_STORAGE_KEY, JSON.stringify([...missing]));
+    showSaveBanner();
+  } catch(e) {}
 }
-function showSaveBanner() {
-  const b = document.getElementById('save-banner'); if (!b) return;
-  b.classList.add('show'); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove('show'), 2000);
-}
+
 const missing = loadMissing();
 
+// Appelé quand on clique sur un ingrédient dans la Gestion
+function toggleIngredient(name) {
+  if (missing.has(name)) missing.delete(name);
+  else missing.add(name);
+  saveMissing();
+  renderAdmin();
+  renderMenu();
+}
+
+// Listes d'ingrédients pour la Gestion : ingrédients de base
+// (config.js) + ingrédients utilisés dans les recettes
 function getBoissonIngredients() {
-  const all = new Set(INGREDIENTS_BOISSONS);
-  COCKTAILS.forEach(c => c.ingredients.forEach(i => all.add(i)));
+  const all = new Set(CONFIG.INGREDIENTS_BOISSONS);
+  CONFIG.COCKTAILS.forEach(c => c.ingredients.forEach(i => all.add(i)));
   return [...all].sort((a,b) => a.localeCompare(b,'fr'));
 }
 function getFoodIngredients() {
-  const all = new Set(INGREDIENTS_NOURRITURE);
-  PLATS.forEach(c => c.ingredients.forEach(i => all.add(i)));
+  const all = new Set(CONFIG.INGREDIENTS_NOURRITURE);
+  CONFIG.PLATS.forEach(c => c.ingredients.forEach(i => all.add(i)));
   return [...all].sort((a,b) => a.localeCompare(b,'fr'));
 }
-function isAvailable(c) { return !c.ingredients.some(i => missing.has(i)); }
-function getMissing(c)   { return c.ingredients.filter(i => missing.has(i)); }
 
 
+/* ----------------------------------------------------------
+   3. AFFICHAGE DE LA CARTE
+---------------------------------------------------------- */
+let currentSection = 'boissons'; // 'boissons' ou 'resto'
 
-/* ============================================================
-   PANNEAU PAIEMENT CLIENT
-============================================================ */
-let currentPaypalUrl = '';
-
-function showPaymentInfo(total) {
-  document.getElementById('modal-form').style.display    = 'none';
-  document.getElementById('modal-payment').style.display = 'block';
-  document.getElementById('payment-total').textContent   = total + '€';
-  currentPaypalUrl = 'https://paypal.me/Zetun27/' + total + 'EUR';
-
-  const pBtn = document.getElementById('paypal-btn');
-  const cBtn = document.getElementById('cash-btn');
-  pBtn.textContent = 'Payer'; pBtn.disabled = false;
-  cBtn.textContent = 'Espèces'; cBtn.disabled = false;
+// Petit bandeau vert "sauvegardé" affiché après une modification
+function showSaveBanner() {
+  const b = document.getElementById('save-banner');
+  if (!b) return;
+  b.classList.add('show');
+  clearTimeout(b._t);
+  b._t = setTimeout(() => b.classList.remove('show'), 2000);
 }
 
-/* Envoie l'email de commande avec le mode de paiement choisi */
-async function sendOrderEmail(modeLabel) {
-  let message = lastOrder.message;
-  if (modeLabel) {
-    message = (message && message !== 'Aucune') ? (message + ' — ' + modeLabel) : modeLabel;
+// Affiche le message du jour si activé dans config.js
+function renderMessageDuJour() {
+  const el = document.getElementById('message-jour');
+  if (CONFIG.MESSAGE_DUJOUR_ACTIF && CONFIG.MESSAGE_DUJOUR) {
+    el.textContent = CONFIG.MESSAGE_DUJOUR;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
   }
-  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-    nom:      lastOrder.nom,
-    commande: lastOrder.commande,
-    message:  message,
-    heure:    lastOrder.heure,
-    total:    lastOrder.total,
-  });
 }
 
-async function payPaypal() {
-  const btn = document.getElementById('paypal-btn');
-  btn.textContent = '...'; btn.disabled = true;
-  try {
-    await sendOrderEmail('💳 Règlement choisi : PAYPAL');
-  } catch(err) { console.error(err); }
-  window.open(currentPaypalUrl, '_blank');
-  btn.textContent = '✓ Envoyé';
-  setTimeout(() => closeOrder(), 1200);
-}
-
-async function payCash() {
-  const btn = document.getElementById('cash-btn');
-  btn.textContent = '...'; btn.disabled = true;
-  try {
-    await sendOrderEmail('💶 Règlement choisi : ESPÈCES au comptoir');
-  } catch(err) { console.error(err); }
-  btn.textContent = '✓ Noté';
-  setTimeout(() => closeOrder(), 1200);
-}
-
-/* ============================================================
-   RENDU MENU
-============================================================ */
-let currentSection = 'boissons';
-
+// Change d'onglet Boissons / Restaurant + met à jour le titre
 function switchMenuSection(section) {
   currentSection = section;
 
-  document.querySelectorAll('.subtab-btn').forEach((b,i) =>
-    b.classList.toggle('active', ['boissons','resto'][i] === section));
+  document.querySelectorAll('.subtab-btn').forEach((btn, i) =>
+    btn.classList.toggle('active', ['boissons','resto'][i] === section));
 
-  const title = document.getElementById('main-title');
-  const tagline = document.getElementById('main-tagline');
-
-  if(section === 'resto') {
-    title.textContent = "ZAK'S RESTAURANT";
-    tagline.textContent = "Cuisine faite maison";
+  const title   = document.getElementById('site-title');
+  const tagline = document.getElementById('site-tagline');
+  if (section === 'resto') {
+    title.textContent   = CONFIG.RESTO_NAME;
+    tagline.textContent = CONFIG.RESTO_TAGLINE;
   } else {
-    title.textContent = "ZAK'S BAR";
-    tagline.textContent = "Cocktails faits maison";
+    title.textContent   = CONFIG.BAR_NAME;
+    tagline.textContent = CONFIG.BAR_TAGLINE;
   }
 
   renderMenu();
 }
-function renderItemsList(items, order) {
+
+// Construit le HTML d'une liste d'articles (cocktails OU plats),
+// regroupés par catégorie selon l'ordre fourni
+function renderItemsList(items, categoryOrder) {
   let html = '';
-  const categories = order.filter(cat => cat === "Personnalisé" || items.some(c => c.category === cat));
+  const categories = categoryOrder.filter(cat =>
+    cat === "Personnalisé" || items.some(c => c.category === cat));
+
   categories.forEach(cat => {
-    html += `<div class="category-title">${cat}</div>`;
+    html += '<div class="category-title">' + cat + '</div>';
+
     if (cat === "Personnalisé") {
-
-  const texte =
-    currentSection === "resto"
-      ? "&#9670; Demandez au chef en cuisine — préparation personnalisée selon les ingrédients disponibles."
-      : "&#9670; Demandez au barman — cocktail personnalisé selon les ingrédients disponibles.";
-
-  html += `<div class="perso-note">${texte}</div>`;
-}else {
-      items.filter(c => c.category === cat).forEach(c => {
-        const avail = isAvailable(c); const miss = getMissing(c);
-        html += `<div class="cocktail-row ${avail?'':'unavail'}">
-          <div class="c-left">
-            <div class="c-name">${c.name}</div>
-            <div class="c-desc">${c.desc}</div>
-            ${!avail&&miss.length?`<div class="c-missing">&#9670; manque : ${miss.join(', ')}</div>`:''}
-          </div>
-          <div class="c-right">
-            <div class="c-price">${c.price}</div>
-            ${!avail?'<span class="unavail-tag">indispo</span>':''}
-          </div>
-        </div>`;
-      });
+      const texte = currentSection === "resto"
+        ? "&#9670; Demandez au chef en cuisine — préparation personnalisée selon les ingrédients disponibles."
+        : "&#9670; Demandez au barman — cocktail personnalisé selon les ingrédients disponibles.";
+      html += '<div class="perso-note">' + texte + '</div>';
+      return;
     }
+
+    items.filter(c => c.category === cat).forEach(c => {
+      const avail = isAvailable(c);
+      const miss  = getMissing(c);
+      html += '<div class="cocktail-row ' + (avail ? '' : 'unavail') + '">'
+        + '<div class="c-left">'
+          + '<div class="c-name">' + c.name + '</div>'
+          + '<div class="c-desc">' + c.desc + '</div>'
+          + (!avail && miss.length ? '<div class="c-missing">&#9670; manque : ' + miss.join(', ') + '</div>' : '')
+        + '</div>'
+        + '<div class="c-right">'
+          + '<div class="c-price">' + c.price + '</div>'
+          + (!avail ? '<span class="unavail-tag">indispo</span>' : '')
+        + '</div>'
+      + '</div>';
+    });
   });
+
   return html;
 }
 
-function renderMenu() {
-  // Affiche / masque les sous-onglets selon RESTAURANT_ACTIF
-  const subtabs = document.querySelector('.menu-subtabs');
-  if (subtabs) subtabs.style.display = RESTAURANT_ACTIF ? 'flex' : 'none';
-  if (!RESTAURANT_ACTIF) currentSection = 'boissons';
+// Message affiché à la place de la carte quand une section est fermée
+function renderClosedMessage(section) {
+  const texte = section === 'resto'
+    ? "&#9670; Le restaurant est actuellement fermé."
+    : "&#9670; Le bar est actuellement fermé.";
+  return '<div class="perso-note">' + texte + '</div>';
+}
 
-  let html = '';
+// Affiche la carte (Boissons ou Restaurant selon l'onglet actif)
+function renderMenu() {
+  renderMessageDuJour();
+
+  // Masque complètement l'onglet Restaurant si désactivé
+  const subtabs = document.querySelector('.menu-subtabs');
+  if (subtabs) subtabs.style.display = CONFIG.RESTAURANT_ACTIF ? 'flex' : 'none';
+  if (!CONFIG.RESTAURANT_ACTIF) currentSection = 'boissons';
+
+  let html;
   if (currentSection === 'boissons') {
-    html = renderItemsList(COCKTAILS, ["Signatures","Classiques","V.I.P.","Personnalisé"]);
+    html = CONFIG.BAR_OUVERT
+      ? renderItemsList(CONFIG.COCKTAILS, ["Signatures","Classiques","V.I.P.","Personnalisé"])
+      : renderClosedMessage('boissons');
   } else {
-    html = renderItemsList(PLATS, ["Signatures","Classiques","Tajines","Personnalisé"]);
+    html = CONFIG.RESTAURANT_OUVERT
+      ? renderItemsList(CONFIG.PLATS, ["Signatures","Classiques","Tajines","Personnalisé"])
+      : renderClosedMessage('resto');
   }
+
   document.getElementById('menu-content').innerHTML = html;
 }
 
-/* ============================================================
-   MODAL COMMANDE
-============================================================ */
-let quantities = {};
-let tipAmount = 0;
 
-/* Tous les articles commandables : Boissons + (Plats si actif) */
+/* ----------------------------------------------------------
+   4. FORMULAIRE DE COMMANDE
+---------------------------------------------------------- */
+let quantities = {};   // { "Nom du cocktail": quantité }
+let tipAmount  = 0;    // pourboire en €
+
+// Articles commandables : cocktails (si le bar est ouvert)
+// + plats (si le restaurant est actif ET ouvert)
 function getOrderableItems() {
-  const drinks = COCKTAILS.map(c => ({ ...c, section: 'Boissons' }));
-const food = RESTAURANT_ACTIF
-  ? PLATS.map(c => ({ ...c, section: "Zak's Restaurant" }))
-  : [];  return [...drinks, ...food];
+  const drinks = CONFIG.BAR_OUVERT
+    ? CONFIG.COCKTAILS.map(c => ({ ...c, section: 'Boissons' }))
+    : [];
+  const food = (CONFIG.RESTAURANT_ACTIF && CONFIG.RESTAURANT_OUVERT)
+    ? CONFIG.PLATS.map(c => ({ ...c, section: 'Restaurant' }))
+    : [];
+  return [...drinks, ...food];
 }
 
 function openOrder() {
   quantities = {};
-  tipAmount = 0;
+  tipAmount  = 0;
   getOrderableItems().forEach(c => quantities[c.name] = 0);
+
   document.getElementById('modal-form').style.display    = 'block';
   document.getElementById('modal-payment').style.display = 'none';
-  renderCocktailsGrid();
-  document.getElementById('order-nom').value = '';
+
+  renderOrderForm();
+
+  document.getElementById('order-nom').value     = '';
   document.getElementById('order-message').value = '';
   document.getElementById('form-feedback').textContent = '';
-  document.getElementById('form-feedback').className = 'form-feedback';
-  document.getElementById('submit-btn').disabled = false;
-  document.querySelectorAll('.tip-btn').forEach(b => b.classList.toggle('active', b.dataset.amount === '0'));
+  document.getElementById('form-feedback').className   = 'form-feedback';
+
+  document.querySelectorAll('.tip-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.amount === '0'));
+
   document.getElementById('modal-overlay').classList.add('open');
 }
 
@@ -916,78 +711,97 @@ function setTip(amount) {
   tipAmount = amount;
   document.querySelectorAll('.tip-btn').forEach(b =>
     b.classList.toggle('active', parseInt(b.dataset.amount) === amount));
-  renderCocktailsGrid();
+  renderOrderForm();
 }
 
-function renderCocktailsGrid() {
-  let html = '';
-  let grandTotal = 0;
-  let lastSection = null;
-  const items = getOrderableItems();
-  const showSections = RESTAURANT_ACTIF && PLATS.length > 0;
+function changeQty(name, delta) {
+  quantities[name] = Math.max(0, (quantities[name] || 0) + delta);
+  renderOrderForm();
+}
 
-  items.forEach(c => {
-    if (showSections && c.section !== lastSection) {
-      html += `<div class="order-section-title">${c.section}</div>`;
-      lastSection = c.section;
+// Construit la liste des articles + le total dans le formulaire de commande
+function renderOrderForm() {
+  const items = getOrderableItems();
+  const grid  = document.getElementById('cocktails-grid');
+
+  // Rien à commander (bar + resto fermés, ou resto désactivé et bar fermé)
+  if (!items.length) {
+    grid.innerHTML = '<div class="ing-empty">Aucun article disponible pour le moment.</div>';
+    document.getElementById('order-total').style.display = 'none';
+    const btn = document.getElementById('submit-btn');
+    btn.innerHTML = '&#9670; Indisponible';
+    btn.disabled  = true;
+    return;
+  }
+
+  // Affiche les en-têtes "Boissons" / "Restaurant" seulement si les
+  // deux types d'articles sont disponibles en même temps
+  const hasDrinks    = items.some(i => i.section === 'Boissons');
+  const hasFood      = items.some(i => i.section === 'Restaurant');
+  const showSections = hasDrinks && hasFood;
+
+  let html = '';
+  let grandTotal  = 0;
+  let lastSection = null;
+
+  items.forEach(item => {
+    if (showSections && item.section !== lastSection) {
+      html += '<div class="order-section-title">' + item.section + '</div>';
+      lastSection = item.section;
     }
 
-    const avail = isAvailable(c);
-    const qty = quantities[c.name] || 0;
-    const isPaid = !c.free && c.pricePerUnit && qty > 0;
-    const lineTotal = isPaid ? (c.pricePerUnit * qty) : 0;
+    const avail     = isAvailable(item);
+    const qty       = quantities[item.name] || 0;
+    const isPaid    = !isFree(item) && qty > 0;
+    const lineTotal = isPaid ? (item.pricePerUnit * qty) : 0;
     if (isPaid) grandTotal += lineTotal;
 
-    html += `<div class="cocktail-selector ${qty>0?'selected':''} ${!avail?'disabled':''}">
-      <div>
-        <div class="cs-name">${c.name}</div>
-        ${!avail?'<div class="cs-unavail">Indisponible ce soir</div>':''}
-        ${isPaid ? `<div class="cs-price-tag">&#9670; ${qty} × ${c.price} = <strong>${lineTotal}€</strong></div>` : ''}
-      </div>
-      <div class="cs-qty">
-        <button class="qty-btn" onclick="changeQty('${c.name}',-1)">−</button>
-        <span class="qty-val">${qty}</span>
-        <button class="qty-btn" onclick="changeQty('${c.name}',1)">+</button>
-      </div>
-    </div>`;
+    html += '<div class="cocktail-selector ' + (qty > 0 ? 'selected' : '') + ' ' + (!avail ? 'disabled' : '') + '">'
+      + '<div>'
+        + '<div class="cs-name">' + item.name + '</div>'
+        + (!avail ? '<div class="cs-unavail">Indisponible ce soir</div>' : '')
+        + (isPaid ? '<div class="cs-price-tag">&#9670; ' + qty + ' × ' + item.price + ' = <strong>' + lineTotal + '€</strong></div>' : '')
+      + '</div>'
+      + '<div class="cs-qty">'
+        + '<button class="qty-btn" onclick="changeQty(\'' + item.name + '\',-1)">−</button>'
+        + '<span class="qty-val">' + qty + '</span>'
+        + '<button class="qty-btn" onclick="changeQty(\'' + item.name + '\',1)">+</button>'
+      + '</div>'
+    + '</div>';
   });
 
-  document.getElementById('cocktails-grid').innerHTML = html;
+  grid.innerHTML = html;
 
-  // Ajoute le pourboire au total
+  // Total = articles payants + pourboire
   grandTotal += tipAmount;
-
-  // Affiche le total si > 0
   const totalEl = document.getElementById('order-total');
   if (grandTotal > 0) {
-    let label = 'Total à payer';
-    let extra = tipAmount > 0 ? ` <span style="opacity:.6">(dont ${tipAmount}€ pourboire)</span>` : '';
-    totalEl.innerHTML = `<span class="total-label">${label}${extra}</span><span class="total-amount">${grandTotal}€</span>`;
+    const extra = tipAmount > 0
+      ? ' <span style="opacity:.6">(dont ' + tipAmount + '€ pourboire)</span>'
+      : '';
+    totalEl.innerHTML = '<span class="total-label">Total à payer' + extra + '</span><span class="total-amount">' + grandTotal + '€</span>';
     totalEl.style.display = 'flex';
   } else {
     totalEl.style.display = 'none';
   }
 
-  // Bouton : si total > 0 → "Commander — X€", sinon "Envoyer la commande"
-  const hasPaid = grandTotal > 0;
   const btn = document.getElementById('submit-btn');
-  btn.innerHTML = hasPaid ? `&#9670; Commander — ${grandTotal}€` : '&#9670; Envoyer la commande';
-  btn.dataset.haspaid = hasPaid ? '1' : '0';
+  btn.disabled  = false;
+  btn.innerHTML = grandTotal > 0
+    ? '&#9670; Commander — ' + grandTotal + '€'
+    : '&#9670; Envoyer la commande';
 }
 
-function changeQty(name, delta) {
-  quantities[name] = Math.max(0, (quantities[name]||0) + delta);
-  renderCocktailsGrid();
-}
 
-/* ============================================================
-   COMMANDE
-   ============================================================
-   - Si le total est à 0€ → l'email est envoyé immédiatement.
-   - Si le total est > 0€ → on affiche le panneau de règlement
-     et l'email n'est envoyé qu'une fois le mode de paiement
-     choisi (PayPal ou Espèces). Cela évite le double envoi.
-============================================================ */
+/* ----------------------------------------------------------
+   5. ENVOI DE LA COMMANDE & PAIEMENT
+   ------------------------------------------------------------
+   - Commande gratuite (0€)  → email envoyé immédiatement.
+   - Commande payante (> 0€) → le panneau "Règlement" s'affiche
+     d'abord ; l'email n'est envoyé qu'une fois le mode de
+     paiement choisi (PayPal ou Espèces). Cela évite le double
+     envoi de mail pour une même commande.
+---------------------------------------------------------- */
 let lastOrder = { nom: '', commande: '', heure: '', total: '', message: '' };
 
 async function submitOrder() {
@@ -997,44 +811,52 @@ async function submitOrder() {
   const btn     = document.getElementById('submit-btn');
 
   const items = getOrderableItems()
-    .filter(c => isAvailable(c) && (quantities[c.name]||0) > 0)
-    .map(c => ({ name: c.name, qty: quantities[c.name], free: c.free, paypal: c.paypal, pricePerUnit: c.pricePerUnit || 0 }));
+    .filter(c => isAvailable(c) && (quantities[c.name] || 0) > 0)
+    .map(c => ({ name: c.name, qty: quantities[c.name], pricePerUnit: c.pricePerUnit || 0 }));
 
-  if (!nom) { fb.textContent = "Merci d'indiquer ton prénom."; fb.className = 'form-feedback err'; return; }
-  if (!items.length) { fb.textContent = 'Sélectionne au moins un article.'; fb.className = 'form-feedback err'; return; }
+  if (!nom) {
+    fb.textContent = "Merci d'indiquer ton prénom.";
+    fb.className   = 'form-feedback err';
+    return;
+  }
+  if (!items.length) {
+    fb.textContent = 'Sélectionne au moins un article.';
+    fb.className   = 'form-feedback err';
+    return;
+  }
 
-  btn.disabled = true;
+  btn.disabled  = true;
   btn.innerHTML = '⏳ Préparation...';
   fb.textContent = '';
 
   const now = new Date();
-  const heure = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'})
-    + ' à ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  const heure = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+    + ' à ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-  // Calcul du total (articles + pourboire)
+  // Total = articles + pourboire
   const itemsTotal = items.reduce((sum, i) => sum + (i.pricePerUnit * i.qty), 0);
-  const total = itemsTotal + tipAmount;
-  const totalTxt = total > 0 ? total + '€' : 'Gratuit';
+  const total      = itemsTotal + tipAmount;
+  const totalTxt   = total > 0 ? total + '€' : 'Gratuit';
 
-  // Détail de la commande ligne par ligne
-  let commandeTxt = items.map(i => {
-    if (i.pricePerUnit > 0) return i.name + ' x' + i.qty + ' (' + (i.pricePerUnit * i.qty) + '€)';
-    return i.name + ' x' + i.qty;
-  }).join(' | ');
+  // Détail de la commande, ligne par ligne
+  let commandeTxt = items.map(i =>
+    i.pricePerUnit > 0
+      ? i.name + ' x' + i.qty + ' (' + (i.pricePerUnit * i.qty) + '€)'
+      : i.name + ' x' + i.qty
+  ).join(' | ');
   if (tipAmount > 0) commandeTxt += ' | Pourboire (' + tipAmount + '€)';
 
-  lastOrder = { nom, commande: commandeTxt, heure, total: totalTxt, message: message || 'Aucune' };
-  saveOrderStats(items, total);
+  lastOrder = { nom: nom, commande: commandeTxt, heure: heure, total: totalTxt, message: message || 'Aucune' };
 
   if (total === 0) {
-    // Commande gratuite → envoi immédiat
+    // Commande gratuite → envoi immédiat, pas de panneau de règlement
     try {
       await sendOrderEmail(null);
       btn.innerHTML  = '✓ Commande envoyée !';
       fb.textContent = 'On prépare ça pour toi 🍹';
       fb.className   = 'form-feedback ok';
-      setTimeout(() => closeOrder(), 2400);
-    } catch(err) {
+      setTimeout(closeOrder, 2400);
+    } catch (err) {
       console.error(err);
       btn.disabled   = false;
       btn.innerHTML  = '&#9670; Envoyer la commande';
@@ -1042,76 +864,164 @@ async function submitOrder() {
       fb.className   = 'form-feedback err';
     }
   } else {
-    // Commande payante → choix du mode de paiement avant envoi
+    // Commande payante → on demande le mode de paiement avant d'envoyer
     btn.innerHTML  = '✓ Commande prête';
-    fb.textContent = `Total : ${total}€ — choisis ton mode de paiement`;
+    fb.textContent = 'Total : ' + total + '€ — choisis ton mode de paiement';
     fb.className   = 'form-feedback ok';
     setTimeout(() => showPaymentInfo(total), 400);
   }
 }
 
-/* ============================================================
-   ADMIN
-============================================================ */
+// Envoie l'email final (avec le mode de paiement choisi, si fourni)
+function sendOrderEmail(modeLabel) {
+  let message = lastOrder.message;
+  if (modeLabel) {
+    message = (message && message !== 'Aucune') ? (message + ' — ' + modeLabel) : modeLabel;
+  }
+  return emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, {
+    nom:      lastOrder.nom,
+    commande: lastOrder.commande,
+    message:  message,
+    heure:    lastOrder.heure,
+    total:    lastOrder.total,
+  });
+}
+
+// Affiche le panneau "Règlement" : total + boutons PayPal / Espèces
+let currentPaypalUrl = '';
+
+function showPaymentInfo(total) {
+  document.getElementById('modal-form').style.display    = 'none';
+  document.getElementById('modal-payment').style.display = 'block';
+  document.getElementById('payment-total').textContent   = total + '€';
+  currentPaypalUrl = getPaypalUrl(total);
+
+  const pBtn = document.getElementById('paypal-btn');
+  const cBtn = document.getElementById('cash-btn');
+  pBtn.textContent = 'Payer';   pBtn.disabled = false;
+  cBtn.textContent = 'Espèces'; cBtn.disabled = false;
+}
+
+// Le client choisit "PayPal" → email envoyé + ouverture de PayPal
+async function payPaypal() {
+  const btn = document.getElementById('paypal-btn');
+  btn.textContent = '...'; btn.disabled = true;
+  try {
+    await sendOrderEmail('💳 Règlement choisi : PAYPAL');
+  } catch (err) { console.error(err); }
+  window.open(currentPaypalUrl, '_blank');
+  btn.textContent = '✓ Envoyé';
+  setTimeout(closeOrder, 1200);
+}
+
+// Le client choisit "Espèces" → email envoyé avec mention "à encaisser au bar"
+async function payCash() {
+  const btn = document.getElementById('cash-btn');
+  btn.textContent = '...'; btn.disabled = true;
+  try {
+    await sendOrderEmail('💶 Règlement choisi : ESPÈCES au comptoir');
+  } catch (err) { console.error(err); }
+  btn.textContent = '✓ Noté';
+  setTimeout(closeOrder, 1200);
+}
+
+
+/* ----------------------------------------------------------
+   6. PANNEAU GESTION (accès barman)
+---------------------------------------------------------- */
+function checkPassword() {
+  const input = document.getElementById('pw-input');
+  const error = document.getElementById('pw-error');
+
+  if (input.value === CONFIG.MOT_DE_PASSE) {
+    document.getElementById('lock-screen').style.display   = 'none';
+    document.getElementById('admin-content').style.display = 'block';
+    input.value = '';
+    error.textContent = '';
+    renderAdmin();
+  } else {
+    error.textContent = 'Mot de passe incorrect.';
+    input.classList.add('error');
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 400);
+  }
+}
+
+function logout() {
+  document.getElementById('admin-content').style.display = 'none';
+  document.getElementById('lock-screen').style.display    = 'flex';
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').textContent = '';
+}
+
+// Affiche les grilles d'ingrédients (Boissons / Nourriture) + la caisse
 function renderAdmin() {
-  const search = (document.getElementById('ing-search')||{value:''}).value.toLowerCase();
+  const search = (document.getElementById('ing-search') || { value: '' }).value.toLowerCase();
 
   const boissons = getBoissonIngredients().filter(i => i.toLowerCase().includes(search));
   const food      = getFoodIngredients().filter(i => i.toLowerCase().includes(search));
 
   const count = missing.size;
   document.getElementById('status-line').innerHTML = count > 0
-    ? `<span class="count">${count} ingrédient${count>1?'s':''} manquant${count>1?'s':''}</span> — certains éléments peuvent être indisponibles`
-    : `<span class="ok">Tout est disponible ✓</span>`;
+    ? '<span class="count">' + count + ' ingrédient' + (count > 1 ? 's' : '') + ' manquant' + (count > 1 ? 's' : '') + '</span> — certains éléments peuvent être indisponibles'
+    : '<span class="ok">Tout est disponible ✓</span>';
 
-  function buildGrid(list) {
-    if (!list.length) return '<div class="ing-empty">Aucun ingrédient</div>';
-    return list.map(ing => {
-      const out = missing.has(ing);
-      return `<button class="ing-btn ${out?'out':''}" onclick="toggle('${ing.replace(/'/g,"\\'")}')">
-        <span class="ing-label">${ing}</span><span class="ing-dot"></span>
-      </button>`;
-    }).join('');
-  }
+  document.getElementById('ing-grid-boissons').innerHTML = buildIngredientGrid(boissons);
 
-  document.getElementById('ing-grid-boissons').innerHTML = '<div class="ing-grid">' + buildGrid(boissons) + '</div>';
-
-  const foodTitle = document.getElementById('ing-section-nourriture-title');
-  const foodGrid  = document.getElementById('ing-grid-nourriture');
-  if (food.length || RESTAURANT_ACTIF) {
-    foodTitle.style.display = 'block';
-    foodGrid.innerHTML = '<div class="ing-grid">' + buildGrid(food) + '</div>';
+  const foodDetails = document.getElementById('food-details');
+  if (CONFIG.RESTAURANT_ACTIF) {
+    foodDetails.style.display = 'block';
+    document.getElementById('ing-grid-nourriture').innerHTML = buildIngredientGrid(food);
   } else {
-    foodTitle.style.display = 'none';
-    foodGrid.innerHTML = '';
+    foodDetails.style.display = 'none';
   }
 
   renderEarnings();
-  renderStats();
 }
 
-/* ============================================================
-   CAISSE / RECETTES
-============================================================ */
-const EARNINGS_KEY = "zaksbar_earnings_v1";
+// Construit les boutons d'une grille d'ingrédients
+function buildIngredientGrid(list) {
+  if (!list.length) return '<div class="ing-empty">Aucun ingrédient</div>';
+  return list.map(ing => {
+    const out = missing.has(ing);
+    return '<button class="ing-btn ' + (out ? 'out' : '') + '" onclick="toggleIngredient(\'' + ing.replace(/'/g, "\\'") + '\')">'
+      + '<span class="ing-label">' + ing + '</span><span class="ing-dot"></span>'
+      + '</button>';
+  }).join('');
+}
+
+
+/* ----------------------------------------------------------
+   7. CAISSE / RECETTES
+   Permet de noter chaque encaissement pour suivre le total
+   gagné. Sauvegardé dans le navigateur (localStorage).
+---------------------------------------------------------- */
+const EARNINGS_STORAGE_KEY = "zaksbar_earnings_v1";
 
 function loadEarnings() {
-  try { const s = localStorage.getItem(EARNINGS_KEY); return s ? JSON.parse(s) : []; }
-  catch(e) { return []; }
+  try {
+    const saved = localStorage.getItem(EARNINGS_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch(e) { return []; }
 }
 function saveEarnings(list) {
-  try { localStorage.setItem(EARNINGS_KEY, JSON.stringify(list)); showSaveBanner(); } catch(e) {}
+  try {
+    localStorage.setItem(EARNINGS_STORAGE_KEY, JSON.stringify(list));
+    showSaveBanner();
+  } catch(e) {}
 }
 
 function addEarning() {
-  const input = document.getElementById('earnings-input');
+  const input  = document.getElementById('earnings-input');
   const amount = parseFloat(input.value);
   if (!amount || amount <= 0) return;
+
   const list = loadEarnings();
-  const now = new Date();
+  const now  = new Date();
   list.push({
     amount: amount,
-    time: now.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}) + ' à ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
+    time: now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+      + ' à ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   });
   saveEarnings(list);
   input.value = '';
@@ -1136,235 +1046,42 @@ function renderEarnings() {
   const listEl  = document.getElementById('earnings-list');
   if (!totalEl || !listEl) return;
 
-  const list = loadEarnings();
+  const list  = loadEarnings();
   const total = list.reduce((sum, e) => sum + e.amount, 0);
-  totalEl.textContent = (Math.round(total*100)/100) + '€';
+  totalEl.textContent = (Math.round(total * 100) / 100) + '€';
 
   if (!list.length) {
     listEl.innerHTML = '<div class="earnings-empty">Aucun encaissement pour le moment</div>';
     return;
   }
 
-  listEl.innerHTML = list.map((e, i) => `
-    <div class="earnings-row">
-      <span class="earnings-amount">+${e.amount}€</span>
-      <span class="earnings-time">${e.time}</span>
-      <button class="earnings-del" onclick="deleteEarning(${i})">&#10005;</button>
-    </div>
-  `).reverse().join('');
+  listEl.innerHTML = list.map((e, i) =>
+    '<div class="earnings-row">'
+      + '<span class="earnings-amount">+' + e.amount + '€</span>'
+      + '<span class="earnings-time">' + e.time + '</span>'
+      + '<button class="earnings-del" onclick="deleteEarning(' + i + ')">&#10005;</button>'
+    + '</div>'
+  ).reverse().join('');
 }
 
-function toggle(name) {
-  if (missing.has(name)) missing.delete(name); else missing.add(name);
-  saveMissing(); renderAdmin(); renderMenu();
-}
 
-function checkPassword() {
-  const input = document.getElementById('pw-input');
-  const error = document.getElementById('pw-error');
-  if (input.value === MOT_DE_PASSE) {
-    document.getElementById('lock-screen').style.display   = 'none';
-    document.getElementById('admin-content').style.display = 'block';
-    input.value = ''; error.textContent = ''; renderAdmin();
-  } else {
-    error.textContent = 'Mot de passe incorrect.';
-    input.classList.add('error'); input.value = '';
-    setTimeout(() => input.classList.remove('error'), 400);
-  }
-}
-
-function logout() {
-  document.getElementById('admin-content').style.display = 'none';
-  document.getElementById('lock-screen').style.display   = 'flex';
-  document.getElementById('pw-input').value = '';
-  document.getElementById('pw-error').textContent = '';
-}
-
+/* ----------------------------------------------------------
+   8. ONGLETS PRINCIPAUX (Carte / Gestion)
+---------------------------------------------------------- */
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b,i) =>
     b.classList.toggle('active', ['menu','admin'][i] === tab));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-'+tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
 }
 
+
+/* ----------------------------------------------------------
+   9. DÉMARRAGE
+---------------------------------------------------------- */
+document.getElementById('site-title').textContent   = CONFIG.BAR_NAME;
+document.getElementById('site-tagline').textContent = CONFIG.BAR_TAGLINE;
 renderMenu();
-
-const STATS_KEY = "zaksbar_stats_v1";
-
-function loadStats() {
-  try {
-    return JSON.parse(localStorage.getItem(STATS_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function saveOrderStats(items,total) {
-
-  const stats = loadStats();
-
-  stats.push({
-    date: Date.now(),
-    total: total,
-    items: items.map(i => ({
-      name: i.name,
-      qty: i.qty
-    }))
-  });
-
-  localStorage.setItem(
-    STATS_KEY,
-    JSON.stringify(stats)
-  );
-}
-
-function renderStats(){
-
-  const stats = loadStats();
-  const container = document.getElementById("stats-container");
-
-  if(!container) return;
-
-  if(!stats.length){
-    container.innerHTML = `
-      <div class="stats-box">
-        Aucune donnée disponible
-      </div>
-
-      <button class="logout-btn" onclick="resetStats()">
-        Réinitialiser les statistiques
-      </button>
-    `;
-    return;
-  }
-
-  let totalOrders = stats.length;
-
-  const products = {};
-
-  stats.forEach(order => {
-    order.items.forEach(item => {
-
-      if(!products[item.name]){
-        products[item.name] = 0;
-      }
-
-      products[item.name] += item.qty;
-
-    });
-  });
-
-  const ranking =
-    Object.entries(products)
-      .sort((a,b) => b[1] - a[1]);
-
-  const bestSeller = ranking[0];
-
-  container.innerHTML = `
-
-    <div class="stats-box">
-      <div class="stats-title">
-        Nombre de commandes
-      </div>
-
-      <div class="stats-value">
-        ${totalOrders}
-      </div>
-    </div>
-
-    <div class="stats-box">
-      <div class="stats-title">
-        Produit le plus vendu
-      </div>
-
-      <div class="stats-value">
-        ${bestSeller[0]}
-      </div>
-
-      <div style="margin-top:6px">
-        ${bestSeller[1]} ventes
-      </div>
-    </div>
-
-    <button class="logout-btn" onclick="resetStats()">
-      Réinitialiser les statistiques
-    </button>
-
-  `;
-}
-function resetStats(){
-
-  if(!confirm(
-    "Réinitialiser toutes les statistiques ?"
-  )) return;
-
-  localStorage.removeItem(STATS_KEY);
-
-  renderStats();
-}
-
-  const ranking =
-    Object.entries(products)
-      .sort((a,b)=>b[1]-a[1]);
-
-  const bestSeller = ranking[0];
-
-  container.innerHTML=`
-
-    <div class="stats-box">
-      <div class="stats-title">
-        Chiffre d'affaires
-      </div>
-
-      <div class="stats-value">
-        ${totalRevenue.toFixed(2)}€
-      </div>
-    </div>
-
-    <div class="stats-box">
-      <div class="stats-title">
-        Nombre de commandes
-      </div>
-
-      <div class="stats-value">
-        ${totalOrders}
-      </div>
-    </div>
-
-    <div class="stats-box">
-      <div class="stats-title">
-        Produit le plus vendu
-      </div>
-
-      <div class="stats-value">
-        ${bestSeller[0]}
-      </div>
-
-      <div style="margin-top:5px">
-        ${bestSeller[1]} ventes
-      </div>
-    </div>
-
-    <div class="stats-box">
-      <div class="stats-title">
-        Top ventes
-      </div>
-
-      ${ranking.slice(0,5).map(item=>`
-        <div class="stats-row">
-          <span class="stats-name">
-            ${item[0]}
-          </span>
-
-          <span class="stats-count">
-            ${item[1]}
-          </span>
-        </div>
-      `).join("")}
-
-    </div>
-  `;
-
 </script>
 
 </body>
