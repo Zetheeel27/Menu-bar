@@ -59,13 +59,26 @@
     font-size: 13px; font-family: 'Helvetica Neue',Arial,sans-serif;
   }
 
+  /* Bandeau horaires */
+  .horaires-info {
+    margin-top: 18px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 10px; font-family: 'Helvetica Neue',Arial,sans-serif;
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .horaires-info::before,
+  .horaires-info::after {
+    content: ''; flex: 1; max-width: 48px; height: 1px;
+    background: currentColor; opacity: 0.3;
+  }
+
   .menu-divider { display: flex; align-items: center; gap: 10px; margin: 1.5rem 0 0; color: var(--text-faint); font-size: 11px; }
   .menu-divider::before, .menu-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* Petit cœur caché (accès Mode Amour) */
+  /* Petit cœur caché (accès Mode Amour) — discret, en bas à gauche */
   .secret-heart {
-    display: inline-block; margin-top: 10px; font-size: 11px;
-    color: var(--accent-dim); opacity: 0.12; cursor: pointer;
+    position: fixed; bottom: 12px; left: 14px; z-index: 50;
+    font-size: 14px; color: var(--text-faint); opacity: 0.15; cursor: pointer;
     transition: opacity 0.3s, color 0.3s; user-select: none;
   }
   .secret-heart:hover { opacity: 0.5; }
@@ -324,6 +337,9 @@
   <button class="tab-btn" onclick="switchTab('admin')">&#9670; Gestion</button>
 </div>
 
+<!-- Petit cœur secret (Mode Amour) — visible depuis n'importe quel onglet -->
+<span class="secret-heart" id="secret-heart" onclick="openAmourPrompt()">&#9825;</span>
+
 <!-- ================================================================
      CARTE — vue client
 ================================================================ -->
@@ -332,9 +348,9 @@
     <div class="menu-header">
       <div class="bar-name" id="site-title">ZAK'S BAR</div>
       <div class="bar-tagline" id="site-tagline">Cocktails faits maison</div>
-      <span class="secret-heart" id="secret-heart" onclick="openAmourPrompt()">&#9825;</span>
       <div id="amour-banner" class="amour-banner" style="display:none">💕 Mode Amour activé — tout est offert pour toi !</div>
       <div id="message-jour" class="message-jour" style="display:none"></div>
+      <div id="horaires-info" class="horaires-info" style="display:none"></div>
       <div class="menu-divider">&#9670;</div>
       <div class="menu-subtabs">
         <button class="subtab-btn active" onclick="switchMenuSection('boissons')">&#9670; Boissons</button>
@@ -361,7 +377,7 @@
     <!-- ÉTAPE 1 : Formulaire -->
     <div id="modal-form">
       <div class="modal-header">
-        <div class="modal-title">&#9670; Votre commande</div>
+        <div class="modal-title" id="order-modal-title">&#9670; Votre commande</div>
         <button class="modal-close" onclick="closeOrder()">&#10005;</button>
       </div>
 
@@ -375,7 +391,7 @@
         <div id="order-total" style="display:none;justify-content:space-between;align-items:center;margin-top:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--accent-dim);border-radius:6px;"></div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" id="tip-group">
         <label class="form-label">Pourboire &#9670; optionnel</label>
         <div class="tip-row" id="tip-row">
           <button class="tip-btn" onclick="setTip(0)" data-amount="0">Aucun</button>
@@ -442,10 +458,11 @@
 <div class="modal-overlay" id="amour-overlay" onclick="if(event.target===this) closeAmourPrompt()">
   <div class="modal" style="max-width:320px; padding-bottom:2rem;">
     <div class="modal-header">
-      <div class="modal-title">Accès secret 🩷</div>
+      <div class="modal-title">💕 Accès secret</div>
       <button class="modal-close" onclick="closeAmourPrompt()">&#10005;</button>
     </div>
-    <input class="lock-input" id="amour-pw-input" type="password" placeholder="••••••••"
+    <input class="lock-input" id="amour-pw-input" type="password" placeholder="••••"
+      inputmode="numeric" pattern="[0-9]*" maxlength="6"
       onkeydown="if(event.key==='Enter') checkAmourPassword()" autocomplete="off" style="width:100%">
     <div class="lock-error" id="amour-pw-error"></div>
     <button class="lock-btn" style="width:100%; margin-top:14px" onclick="checkAmourPassword()">Entrer</button>
@@ -472,7 +489,7 @@
         <div class="admin-title">Gestion des stocks</div>
         <button class="logout-btn" onclick="logout()">Se déconnecter</button>
       </div>
-      
+      <p class="admin-hint">Clique sur un ingrédient pour le marquer <strong style="color:var(--danger-text)">indisponible</strong>. Les éléments concernés sont automatiquement grisés sur la carte. Sauvegarde <strong style="color:var(--success)">automatique</strong>.</p>
       <div class="save-banner" id="save-banner">&#10003; Modifications sauvegardées</div>
       <div class="status-line" id="status-line"></div>
       <input class="search-input" id="ing-search" type="text" placeholder="Rechercher un ingrédient..." oninput="renderAdmin()">
@@ -517,11 +534,6 @@
 <script>
 /* ════════════════════════════════════════════════════════════
    MOTEUR DU SITE — ZAK'S BAR
-   ════════════════════════════════════════════════════════════
-   Toutes les données modifiables (cocktails, plats, prix,
-   mots de passe, horaires...) sont dans config.js (objet CONFIG).
-   Ce fichier gère uniquement l'affichage, les calculs et les
-   formulaires — tu ne devrais pas avoir besoin d'y toucher.
 ════════════════════════════════════════════════════════════ */
 
 /* ----------------------------------------------------------
@@ -534,44 +546,33 @@ emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
    1. OUTILS / HELPERS
 ---------------------------------------------------------- */
 
-// Construit un lien PayPal pour un montant donné (en euros)
 function getPaypalUrl(amount) {
   return 'https://paypal.me/' + CONFIG.PAYPAL_USERNAME + '/' + amount + 'EUR';
 }
 
-// Un article est gratuit si pricePerUnit est absent, nul ou 0
-// — ou si le Mode Amour est activé (tout devient gratuit).
 function isFree(item) {
   if (amourMode) return true;
   return !item.pricePerUnit || item.pricePerUnit <= 0;
 }
 
-// Texte de prix affiché sur la carte (remplacé en Mode Amour)
 function displayPrice(item) {
   return amourMode ? '💕 Offert' : item.price;
 }
 
-// Un article est disponible si :
-//  - il n'est PAS dans CONFIG.DISABLED_PRODUCTS
-//  - aucun de ses ingrédients n'est marqué "manquant" dans le stock
 function isAvailable(item) {
   if (CONFIG.DISABLED_PRODUCTS.includes(item.name)) return false;
   return !item.ingredients.some(ing => missing.has(ing));
 }
 
-// Liste des ingrédients manquants pour un article donné
 function getMissing(item) {
   return item.ingredients.filter(ing => missing.has(ing));
 }
 
-// Convertit "HH:MM" en nombre de minutes depuis minuit
 function parseHeure(hhmm) {
   const parts = hhmm.split(':');
   return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
 }
 
-// Vérifie si l'heure actuelle est comprise dans une plage horaire.
-// Gère le cas où la fermeture est après minuit (ex: 18:00 → 02:00).
 function isWithinHours(horaires) {
   const now = new Date();
   const current = now.getHours() * 60 + now.getMinutes();
@@ -581,17 +582,14 @@ function isWithinHours(horaires) {
   if (debut <= fin) {
     return current >= debut && current < fin;
   } else {
-    // La plage traverse minuit (ex: 18:00 → 02:00)
     return current >= debut || current < fin;
   }
 }
 
-// Le bar est-il ouvert ? (mode auto = horaires, mode manuel = interrupteur)
 function isBarOpen() {
   return CONFIG.HORAIRES_AUTO_ACTIF ? isWithinHours(CONFIG.BAR_HORAIRES) : CONFIG.BAR_OUVERT;
 }
 
-// Le restaurant est-il ouvert ?
 function isRestaurantOpen() {
   return CONFIG.HORAIRES_AUTO_ACTIF ? isWithinHours(CONFIG.RESTAURANT_HORAIRES) : CONFIG.RESTAURANT_OUVERT;
 }
@@ -599,8 +597,6 @@ function isRestaurantOpen() {
 
 /* ----------------------------------------------------------
    2. STOCK (ingrédients indisponibles)
-   Sauvegardé dans le navigateur (localStorage) — propre à
-   l'appareil utilisé pour la gestion.
 ---------------------------------------------------------- */
 const STOCK_STORAGE_KEY = "zaksbar_missing_v1";
 
@@ -621,14 +617,11 @@ function saveMissing() {
 const missing = loadMissing();
 
 /* ----------------------------------------------------------
-   MODE AMOUR 💕 (accès secret)
-   État chargé dès le départ pour que isFree() / displayPrice()
-   fonctionnent correctement dès le premier rendu.
+   MODE AMOUR 💕
 ---------------------------------------------------------- */
 const AMOUR_STORAGE_KEY = "zaksbar_amour_mode";
 let amourMode = localStorage.getItem(AMOUR_STORAGE_KEY) === 'true';
 
-// Appelé quand on clique sur un ingrédient dans la Gestion
 function toggleIngredient(name) {
   if (missing.has(name)) missing.delete(name);
   else missing.add(name);
@@ -637,8 +630,6 @@ function toggleIngredient(name) {
   renderMenu();
 }
 
-// Listes d'ingrédients pour la Gestion : ingrédients de base
-// (config.js) + ingrédients utilisés dans les recettes
 function getBoissonIngredients() {
   const all = new Set(CONFIG.INGREDIENTS_BOISSONS);
   CONFIG.COCKTAILS.forEach(c => c.ingredients.forEach(i => all.add(i)));
@@ -654,9 +645,8 @@ function getFoodIngredients() {
 /* ----------------------------------------------------------
    3. AFFICHAGE DE LA CARTE
 ---------------------------------------------------------- */
-let currentSection = 'boissons'; // 'boissons' ou 'resto'
+let currentSection = 'boissons';
 
-// Petit bandeau vert "sauvegardé" affiché après une modification
 function showSaveBanner() {
   const b = document.getElementById('save-banner');
   if (!b) return;
@@ -665,8 +655,9 @@ function showSaveBanner() {
   b._t = setTimeout(() => b.classList.remove('show'), 2000);
 }
 
-// Affiche le message du jour si activé dans config.js
+// Affiche le message du jour + le bandeau horaires
 function renderMessageDuJour() {
+  // Message du jour
   const el = document.getElementById('message-jour');
   if (CONFIG.MESSAGE_DUJOUR_ACTIF && CONFIG.MESSAGE_DUJOUR) {
     el.textContent = CONFIG.MESSAGE_DUJOUR;
@@ -674,9 +665,38 @@ function renderMessageDuJour() {
   } else {
     el.style.display = 'none';
   }
+
+  // Bandeau horaires (uniquement en mode automatique)
+  const hEl = document.getElementById('horaires-info');
+  if (CONFIG.HORAIRES_AUTO_ACTIF) {
+    const barOpen   = isBarOpen();
+    const restoOpen = CONFIG.RESTAURANT_ACTIF && isRestaurantOpen();
+    const bH = CONFIG.BAR_HORAIRES;
+    const rH = CONFIG.RESTAURANT_HORAIRES;
+
+    let texte = '';
+    let isOpen = false;
+
+    if (currentSection === 'boissons') {
+      isOpen = barOpen;
+      texte = barOpen
+        ? 'Ouvert jusqu\'à ' + bH.fin
+        : 'Ouvre à ' + bH.debut;
+    } else {
+      isOpen = restoOpen;
+      texte = restoOpen
+        ? 'Ouvert jusqu\'à ' + rH.fin
+        : 'Ouvre à ' + rH.debut;
+    }
+
+    hEl.textContent = texte;
+    hEl.style.display = 'flex';
+    hEl.style.color = isOpen ? 'var(--accent)' : 'var(--text-muted)';
+  } else {
+    hEl.style.display = 'none';
+  }
 }
 
-// Change d'onglet Boissons / Restaurant + met à jour le titre
 function switchMenuSection(section) {
   currentSection = section;
 
@@ -696,8 +716,6 @@ function switchMenuSection(section) {
   renderMenu();
 }
 
-// Construit le HTML d'une liste d'articles (cocktails OU plats),
-// regroupés par catégorie selon l'ordre fourni
 function renderItemsList(items, categoryOrder) {
   let html = '';
   const categories = categoryOrder.filter(cat =>
@@ -734,7 +752,6 @@ function renderItemsList(items, categoryOrder) {
   return html;
 }
 
-// Message affiché à la place de la carte quand une section est fermée
 function renderClosedMessage(section) {
   const texte = section === 'resto'
     ? "&#9670; Le restaurant est actuellement fermé."
@@ -742,7 +759,6 @@ function renderClosedMessage(section) {
   return '<div class="perso-note">' + texte + '</div>';
 }
 
-// Affiche la liste V.I.P. en bas de la carte, si activée dans config.js
 function renderVIP() {
   const section = document.getElementById('vip-section');
   if (!CONFIG.VIP_ACTIF) {
@@ -762,18 +778,15 @@ function renderVIP() {
   ).join('');
 }
 
-// Affiche / masque le bandeau "Mode Amour activé"
 function renderAmourBanner() {
   document.getElementById('amour-banner').style.display = amourMode ? 'block' : 'none';
 }
 
-// Affiche la carte (Boissons ou Restaurant selon l'onglet actif)
 function renderMenu() {
   renderMessageDuJour();
   renderAmourBanner();
   renderVIP();
 
-  // Masque complètement l'onglet Restaurant si désactivé
   const subtabs = document.querySelector('.menu-subtabs');
   if (subtabs) subtabs.style.display = CONFIG.RESTAURANT_ACTIF ? 'flex' : 'none';
   if (!CONFIG.RESTAURANT_ACTIF) currentSection = 'boissons';
@@ -796,11 +809,9 @@ function renderMenu() {
 /* ----------------------------------------------------------
    4. FORMULAIRE DE COMMANDE
 ---------------------------------------------------------- */
-let quantities = {};   // { "Nom du cocktail": quantité }
-let tipAmount  = 0;    // pourboire en €
+let quantities = {};
+let tipAmount  = 0;
 
-// Articles commandables : cocktails (si le bar est ouvert)
-// + plats (si le restaurant est actif ET ouvert)
 function getOrderableItems() {
   const drinks = isBarOpen()
     ? CONFIG.COCKTAILS.map(c => ({ ...c, section: 'Boissons' }))
@@ -821,8 +832,24 @@ function openOrder() {
 
   renderOrderForm();
 
-  document.getElementById('order-nom').value     = '';
-  document.getElementById('order-message').value = '';
+  const orderNom   = document.getElementById('order-nom');
+  const orderMsg   = document.getElementById('order-message');
+  const modalTitle = document.getElementById('order-modal-title');
+  const tipGroup   = document.getElementById('tip-group');
+
+  if (amourMode) {
+    orderNom.value       = CONFIG.AMOUR_NOM || '';
+    orderMsg.placeholder = 'Un petit mot pour ton chéri... 💕 (optionnel)';
+    modalTitle.innerHTML = '💕 Pour toi, ma chérie 💕';
+    tipGroup.style.display = 'none';
+  } else {
+    orderNom.value       = '';
+    orderMsg.placeholder = 'Moins fort, plus fort... (optionnel)';
+    modalTitle.innerHTML = '&#9670; Votre commande';
+    tipGroup.style.display = 'block';
+  }
+  orderMsg.value = '';
+
   document.getElementById('form-feedback').textContent = '';
   document.getElementById('form-feedback').className   = 'form-feedback';
 
@@ -852,12 +879,10 @@ function changeQty(name, delta) {
   renderOrderForm();
 }
 
-// Construit la liste des articles + le total dans le formulaire de commande
 function renderOrderForm() {
   const items = getOrderableItems();
   const grid  = document.getElementById('cocktails-grid');
 
-  // Rien à commander (bar + resto fermés, ou resto désactivé et bar fermé)
   if (!items.length) {
     grid.innerHTML = '<div class="ing-empty">Aucun article disponible pour le moment.</div>';
     document.getElementById('order-total').style.display = 'none';
@@ -867,8 +892,6 @@ function renderOrderForm() {
     return;
   }
 
-  // Affiche les en-têtes "Boissons" / "Restaurant" seulement si les
-  // deux types d'articles sont disponibles en même temps
   const hasDrinks    = items.some(i => i.section === 'Boissons');
   const hasFood      = items.some(i => i.section === 'Restaurant');
   const showSections = hasDrinks && hasFood;
@@ -905,7 +928,6 @@ function renderOrderForm() {
 
   grid.innerHTML = html;
 
-  // Total = articles payants + pourboire
   grandTotal += tipAmount;
   const totalEl = document.getElementById('order-total');
   if (grandTotal > 0) {
@@ -928,12 +950,6 @@ function renderOrderForm() {
 
 /* ----------------------------------------------------------
    5. ENVOI DE LA COMMANDE & PAIEMENT
-   ------------------------------------------------------------
-   - Commande gratuite (0€)  → email envoyé immédiatement.
-   - Commande payante (> 0€) → le panneau "Règlement" s'affiche
-     d'abord ; l'email n'est envoyé qu'une fois le mode de
-     paiement choisi (PayPal ou Espèces). Cela évite le double
-     envoi de mail pour une même commande.
 ---------------------------------------------------------- */
 let lastOrder = { nom: '', commande: '', heure: '', total: '', message: '' };
 
@@ -966,27 +982,29 @@ async function submitOrder() {
   const heure = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
     + ' à ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-  // Total = articles + pourboire
-  const itemsTotal = items.reduce((sum, i) => sum + (i.pricePerUnit * i.qty), 0);
-  const total      = itemsTotal + tipAmount;
-  const totalTxt   = total > 0 ? total + '€' : 'Gratuit';
+  const itemsTotal = amourMode ? 0 : items.reduce((sum, i) => sum + (i.pricePerUnit * i.qty), 0);
+  const total      = amourMode ? 0 : (itemsTotal + tipAmount);
+  const totalTxt   = amourMode ? '💕 Offert avec amour' : (total > 0 ? total + '€' : 'Gratuit');
 
-  // Détail de la commande, ligne par ligne
   let commandeTxt = items.map(i =>
-    i.pricePerUnit > 0
+    (!amourMode && i.pricePerUnit > 0)
       ? i.name + ' x' + i.qty + ' (' + (i.pricePerUnit * i.qty) + '€)'
       : i.name + ' x' + i.qty
   ).join(' | ');
-  if (tipAmount > 0) commandeTxt += ' | Pourboire (' + tipAmount + '€)';
+  if (!amourMode && tipAmount > 0) commandeTxt += ' | Pourboire (' + tipAmount + '€)';
 
-  lastOrder = { nom: nom, commande: commandeTxt, heure: heure, total: totalTxt, message: message || 'Aucune' };
+  let finalMessage = message || 'Aucune';
+  if (amourMode) {
+    finalMessage = (message ? message + ' — ' : '') + '💕 Commande envoyée via le Mode Amour';
+  }
+
+  lastOrder = { nom: nom, commande: commandeTxt, heure: heure, total: totalTxt, message: finalMessage };
 
   if (total === 0) {
-    // Commande gratuite → envoi immédiat, pas de panneau de règlement
     try {
       await sendOrderEmail(null);
       btn.innerHTML  = '✓ Commande envoyée !';
-      fb.textContent = 'On prépare ça pour toi 🍹';
+      fb.textContent = amourMode ? 'Envoyé avec tout mon amour 💕' : 'On prépare ça pour toi 🍹';
       fb.className   = 'form-feedback ok';
       setTimeout(closeOrder, 2400);
     } catch (err) {
@@ -997,7 +1015,6 @@ async function submitOrder() {
       fb.className   = 'form-feedback err';
     }
   } else {
-    // Commande payante → on demande le mode de paiement avant d'envoyer
     btn.innerHTML  = '✓ Commande prête';
     fb.textContent = 'Total : ' + total + '€ — choisis ton mode de paiement';
     fb.className   = 'form-feedback ok';
@@ -1005,7 +1022,6 @@ async function submitOrder() {
   }
 }
 
-// Envoie l'email final (avec le mode de paiement choisi, si fourni)
 function sendOrderEmail(modeLabel) {
   let message = lastOrder.message;
   if (modeLabel) {
@@ -1020,7 +1036,6 @@ function sendOrderEmail(modeLabel) {
   });
 }
 
-// Affiche le panneau "Règlement" : total + boutons PayPal / Espèces
 let currentPaypalUrl = '';
 
 function showPaymentInfo(total) {
@@ -1035,7 +1050,6 @@ function showPaymentInfo(total) {
   cBtn.textContent = 'Espèces'; cBtn.disabled = false;
 }
 
-// Le client choisit "PayPal" → email envoyé + ouverture de PayPal
 async function payPaypal() {
   const btn = document.getElementById('paypal-btn');
   btn.textContent = '...'; btn.disabled = true;
@@ -1047,7 +1061,6 @@ async function payPaypal() {
   setTimeout(closeOrder, 1200);
 }
 
-// Le client choisit "Espèces" → email envoyé avec mention "à encaisser au bar"
 async function payCash() {
   const btn = document.getElementById('cash-btn');
   btn.textContent = '...'; btn.disabled = true;
@@ -1087,7 +1100,6 @@ function logout() {
   document.getElementById('pw-error').textContent = '';
 }
 
-// Affiche les grilles d'ingrédients (Boissons / Nourriture) + la caisse
 function renderAdmin() {
   const search = (document.getElementById('ing-search') || { value: '' }).value.toLowerCase();
 
@@ -1112,7 +1124,6 @@ function renderAdmin() {
   renderEarnings();
 }
 
-// Construit les boutons d'une grille d'ingrédients
 function buildIngredientGrid(list) {
   if (!list.length) return '<div class="ing-empty">Aucun ingrédient</div>';
   return list.map(ing => {
@@ -1126,8 +1137,6 @@ function buildIngredientGrid(list) {
 
 /* ----------------------------------------------------------
    7. CAISSE / RECETTES
-   Permet de noter chaque encaissement pour suivre le total
-   gagné. Sauvegardé dans le navigateur (localStorage).
 ---------------------------------------------------------- */
 const EARNINGS_STORAGE_KEY = "zaksbar_earnings_v1";
 
@@ -1211,12 +1220,6 @@ function switchTab(tab) {
 
 /* ----------------------------------------------------------
    9. MODE AMOUR 💕 (accès secret)
-   ------------------------------------------------------------
-   Un petit cœur discret (en haut de la carte, sous le sous-titre)
-   ouvre un mot de passe. Le bon mot de passe ACTIVE le mode
-   (tout devient gratuit + cœurs flottants) ; le retaper DÉSACTIVE
-   le mode. L'état est sauvegardé dans localStorage, donc une fois
-   activé sur un appareil, ça reste activé même après rechargement.
 ---------------------------------------------------------- */
 function openAmourPrompt() {
   document.getElementById('amour-pw-input').value = '';
@@ -1262,14 +1265,13 @@ function deactivateAmourMode() {
   if (document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
 }
 
-// Petits cœurs flottants — un nouveau cœur apparaît régulièrement
-// depuis le bas de l'écran et flotte vers le haut.
+const HEART_EMOJIS = ['❤','💕','💖','💗','💓','💞'];
 let heartsInterval = null;
 
 function spawnHeart() {
   const heart = document.createElement('div');
   heart.className = 'heart-float';
-  heart.textContent = '❤';
+  heart.textContent = HEART_EMOJIS[Math.floor(Math.random() * HEART_EMOJIS.length)];
   heart.style.left = (Math.random() * 100) + 'vw';
   heart.style.fontSize = (12 + Math.random() * 18) + 'px';
   const duration = 4 + Math.random() * 3;
@@ -1297,15 +1299,11 @@ document.getElementById('site-title').textContent   = CONFIG.BAR_NAME;
 document.getElementById('site-tagline').textContent = CONFIG.BAR_TAGLINE;
 renderMenu();
 
-// Si le Mode Amour était déjà activé sur cet appareil, on relance
-// l'animation de cœurs et l'icône active dès le chargement.
 if (amourMode) {
   document.getElementById('secret-heart').classList.add('active');
   startHearts();
 }
 
-// En mode horaires automatiques, on rafraîchit la carte chaque minute
-// pour que l'ouverture/fermeture se mette à jour sans recharger la page.
 if (CONFIG.HORAIRES_AUTO_ACTIF) {
   setInterval(renderMenu, 60000);
 }
