@@ -62,7 +62,7 @@ const CONFIG = {
   HORAIRES_AUTO_ACTIF: true,
 
   BAR_OUVERT:        true,
-  RESTAURANT_OUVERT: false,
+  RESTAURANT_OUVERT: true,
   RESTAURANT_ACTIF:  true,
 
   BAR_HORAIRES: {
@@ -70,8 +70,8 @@ const CONFIG = {
     fin:   "02:00",
   },
   RESTAURANT_HORAIRES: {
-    debut: "20:00",
-    fin:   "23:00",
+    debut: "04:00",
+    fin:   "04:01",
   },
 
 
