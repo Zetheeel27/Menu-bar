@@ -2,7 +2,6 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="Favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zak's Bar</title>
 
@@ -62,6 +61,33 @@
 
   .menu-divider { display: flex; align-items: center; gap: 10px; margin: 1.5rem 0 0; color: var(--text-faint); font-size: 11px; }
   .menu-divider::before, .menu-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* Petit cœur caché (accès Mode Amour) */
+  .secret-heart {
+    display: inline-block; margin-top: 10px; font-size: 11px;
+    color: var(--accent-dim); opacity: 0.12; cursor: pointer;
+    transition: opacity 0.3s, color 0.3s; user-select: none;
+  }
+  .secret-heart:hover { opacity: 0.5; }
+  .secret-heart.active { opacity: 1; color: #e0607a; }
+
+  /* Bandeau Mode Amour */
+  .amour-banner {
+    margin-top: 14px; padding: 10px 16px; border: 1px solid #e0607a;
+    border-radius: 8px; text-align: center; color: #ff9bb3;
+    font-size: 13px; font-family: 'Helvetica Neue',Arial,sans-serif;
+    background: rgba(224,96,122,0.08);
+  }
+
+  /* Cœurs flottants (Mode Amour) */
+  @keyframes floatHeart {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 0.9; }
+    100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+  }
+  .heart-float {
+    position: fixed; bottom: -30px; pointer-events: none; z-index: 9999;
+    color: #e0607a; animation-name: floatHeart; animation-timing-function: linear; animation-fill-mode: forwards;
+  }
 
   /* Sous-onglets Boissons / Restaurant */
   .menu-subtabs { display: flex; gap: 8px; justify-content: center; margin: 1.5rem 0 0.5rem; }
@@ -306,6 +332,8 @@
     <div class="menu-header">
       <div class="bar-name" id="site-title">ZAK'S BAR</div>
       <div class="bar-tagline" id="site-tagline">Cocktails faits maison</div>
+      <span class="secret-heart" id="secret-heart" onclick="openAmourPrompt()">&#9825;</span>
+      <div id="amour-banner" class="amour-banner" style="display:none">💕 Mode Amour activé — tout est offert pour toi !</div>
       <div id="message-jour" class="message-jour" style="display:none"></div>
       <div class="menu-divider">&#9670;</div>
       <div class="menu-subtabs">
@@ -409,6 +437,22 @@
 </div>
 
 <!-- ================================================================
+     MODAL MODE AMOUR (accès secret)
+================================================================ -->
+<div class="modal-overlay" id="amour-overlay" onclick="if(event.target===this) closeAmourPrompt()">
+  <div class="modal" style="max-width:320px; padding-bottom:2rem;">
+    <div class="modal-header">
+      <div class="modal-title">💕 Accès secret</div>
+      <button class="modal-close" onclick="closeAmourPrompt()">&#10005;</button>
+    </div>
+    <input class="lock-input" id="amour-pw-input" type="password" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter') checkAmourPassword()" autocomplete="off" style="width:100%">
+    <div class="lock-error" id="amour-pw-error"></div>
+    <button class="lock-btn" style="width:100%; margin-top:14px" onclick="checkAmourPassword()">Entrer</button>
+  </div>
+</div>
+
+<!-- ================================================================
      GESTION — accès barman
 ================================================================ -->
 <div id="panel-admin" class="panel">
@@ -428,6 +472,7 @@
         <div class="admin-title">Gestion des stocks</div>
         <button class="logout-btn" onclick="logout()">Se déconnecter</button>
       </div>
+      <p class="admin-hint">Clique sur un ingrédient pour le marquer <strong style="color:var(--danger-text)">indisponible</strong>. Les éléments concernés sont automatiquement grisés sur la carte. Sauvegarde <strong style="color:var(--success)">automatique</strong>.</p>
       <div class="save-banner" id="save-banner">&#10003; Modifications sauvegardées</div>
       <div class="status-line" id="status-line"></div>
       <input class="search-input" id="ing-search" type="text" placeholder="Rechercher un ingrédient..." oninput="renderAdmin()">
@@ -495,8 +540,15 @@ function getPaypalUrl(amount) {
 }
 
 // Un article est gratuit si pricePerUnit est absent, nul ou 0
+// — ou si le Mode Amour est activé (tout devient gratuit).
 function isFree(item) {
+  if (amourMode) return true;
   return !item.pricePerUnit || item.pricePerUnit <= 0;
+}
+
+// Texte de prix affiché sur la carte (remplacé en Mode Amour)
+function displayPrice(item) {
+  return amourMode ? '💕 Offert' : item.price;
 }
 
 // Un article est disponible si :
@@ -567,6 +619,14 @@ function saveMissing() {
 }
 
 const missing = loadMissing();
+
+/* ----------------------------------------------------------
+   MODE AMOUR 💕 (accès secret)
+   État chargé dès le départ pour que isFree() / displayPrice()
+   fonctionnent correctement dès le premier rendu.
+---------------------------------------------------------- */
+const AMOUR_STORAGE_KEY = "zaksbar_amour_mode";
+let amourMode = localStorage.getItem(AMOUR_STORAGE_KEY) === 'true';
 
 // Appelé quand on clique sur un ingrédient dans la Gestion
 function toggleIngredient(name) {
@@ -664,7 +724,7 @@ function renderItemsList(items, categoryOrder) {
           + (!avail && miss.length ? '<div class="c-missing">&#9670; manque : ' + miss.join(', ') + '</div>' : '')
         + '</div>'
         + '<div class="c-right">'
-          + '<div class="c-price">' + c.price + '</div>'
+          + '<div class="c-price">' + displayPrice(c) + '</div>'
           + (!avail ? '<span class="unavail-tag">indispo</span>' : '')
         + '</div>'
       + '</div>';
@@ -702,9 +762,15 @@ function renderVIP() {
   ).join('');
 }
 
+// Affiche / masque le bandeau "Mode Amour activé"
+function renderAmourBanner() {
+  document.getElementById('amour-banner').style.display = amourMode ? 'block' : 'none';
+}
+
 // Affiche la carte (Boissons ou Restaurant selon l'onglet actif)
 function renderMenu() {
   renderMessageDuJour();
+  renderAmourBanner();
   renderVIP();
 
   // Masque complètement l'onglet Restaurant si désactivé
@@ -826,7 +892,7 @@ function renderOrderForm() {
     html += '<div class="cocktail-selector ' + (qty > 0 ? 'selected' : '') + ' ' + (!avail ? 'disabled' : '') + '">'
       + '<div>'
         + '<div class="cs-name">' + item.name + '</div>'
-        + (!avail ? '<div class="cs-unavail">Indisponible</div>' : '')
+        + (!avail ? '<div class="cs-unavail">Indisponible ce soir</div>' : '')
         + (isPaid ? '<div class="cs-price-tag">&#9670; ' + qty + ' × ' + item.price + ' = <strong>' + lineTotal + '€</strong></div>' : '')
       + '</div>'
       + '<div class="cs-qty">'
@@ -1144,11 +1210,99 @@ function switchTab(tab) {
 
 
 /* ----------------------------------------------------------
-   9. DÉMARRAGE
+   9. MODE AMOUR 💕 (accès secret)
+   ------------------------------------------------------------
+   Un petit cœur discret (en haut de la carte, sous le sous-titre)
+   ouvre un mot de passe. Le bon mot de passe ACTIVE le mode
+   (tout devient gratuit + cœurs flottants) ; le retaper DÉSACTIVE
+   le mode. L'état est sauvegardé dans localStorage, donc une fois
+   activé sur un appareil, ça reste activé même après rechargement.
+---------------------------------------------------------- */
+function openAmourPrompt() {
+  document.getElementById('amour-pw-input').value = '';
+  document.getElementById('amour-pw-error').textContent = '';
+  document.getElementById('amour-overlay').classList.add('open');
+}
+
+function closeAmourPrompt() {
+  document.getElementById('amour-overlay').classList.remove('open');
+}
+
+function checkAmourPassword() {
+  const input = document.getElementById('amour-pw-input');
+  const error = document.getElementById('amour-pw-error');
+
+  if (input.value === CONFIG.AMOUR_MOT_DE_PASSE) {
+    if (amourMode) deactivateAmourMode();
+    else activateAmourMode();
+    closeAmourPrompt();
+  } else {
+    error.textContent = 'Mot de passe incorrect.';
+    input.classList.add('error');
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 400);
+  }
+}
+
+function activateAmourMode() {
+  amourMode = true;
+  localStorage.setItem(AMOUR_STORAGE_KEY, 'true');
+  document.getElementById('secret-heart').classList.add('active');
+  startHearts();
+  renderMenu();
+  if (document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
+}
+
+function deactivateAmourMode() {
+  amourMode = false;
+  localStorage.removeItem(AMOUR_STORAGE_KEY);
+  document.getElementById('secret-heart').classList.remove('active');
+  stopHearts();
+  renderMenu();
+  if (document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
+}
+
+// Petits cœurs flottants — un nouveau cœur apparaît régulièrement
+// depuis le bas de l'écran et flotte vers le haut.
+let heartsInterval = null;
+
+function spawnHeart() {
+  const heart = document.createElement('div');
+  heart.className = 'heart-float';
+  heart.textContent = '❤';
+  heart.style.left = (Math.random() * 100) + 'vw';
+  heart.style.fontSize = (12 + Math.random() * 18) + 'px';
+  const duration = 4 + Math.random() * 3;
+  heart.style.animationDuration = duration + 's';
+  document.body.appendChild(heart);
+  setTimeout(() => heart.remove(), duration * 1000 + 200);
+}
+
+function startHearts() {
+  if (heartsInterval) return;
+  heartsInterval = setInterval(spawnHeart, 350);
+}
+
+function stopHearts() {
+  clearInterval(heartsInterval);
+  heartsInterval = null;
+  document.querySelectorAll('.heart-float').forEach(h => h.remove());
+}
+
+
+/* ----------------------------------------------------------
+   10. DÉMARRAGE
 ---------------------------------------------------------- */
 document.getElementById('site-title').textContent   = CONFIG.BAR_NAME;
 document.getElementById('site-tagline').textContent = CONFIG.BAR_TAGLINE;
 renderMenu();
+
+// Si le Mode Amour était déjà activé sur cet appareil, on relance
+// l'animation de cœurs et l'icône active dès le chargement.
+if (amourMode) {
+  document.getElementById('secret-heart').classList.add('active');
+  startHearts();
+}
 
 // En mode horaires automatiques, on rafraîchit la carte chaque minute
 // pour que l'ouverture/fermeture se mette à jour sans recharger la page.
