@@ -32,8 +32,8 @@ const CONFIG = {
      Un bandeau affiché en haut de la carte (annonce, soirée
      spéciale, info...). Mets ACTIF sur false pour le masquer.
   ────────────────────────────────────────────────────────── */
-  MESSAGE_DUJOUR_ACTIF: true,
-  MESSAGE_DUJOUR: "Bar ouvert dès 20h",
+  MESSAGE_DUJOUR_ACTIF: false,
+  MESSAGE_DUJOUR: "🎉 Soirée spéciale ce soir — happy hour jusqu'à 22h ",
 
 
   /* ──────────────────────────────────────────────────────────
@@ -67,11 +67,11 @@ const CONFIG = {
 
   BAR_HORAIRES: {
     debut: "20:00",
-    fin:   "02:00",
+    fin:   "23:00",
   },
   RESTAURANT_HORAIRES: {
-    debut: "19:00",
-    fin:   "23:00",
+    debut: "20:00",
+    fin:   "00:00",
   },
 
 
@@ -291,7 +291,8 @@ const CONFIG = {
   ],
 
 
-  /* ──────────────────────────────────────────────────────────
+
+/* ──────────────────────────────────────────────────────────
      11. MODE AMOUR 💕 (accès secret)
      ──────────────────────────────────────────────────────────
      Un petit cœur discret est caché en haut de la carte, juste
@@ -300,10 +301,14 @@ const CONFIG = {
        - tout devient gratuit (les prix affichent "💕 Offert")
        - des petits cœurs flottent sur tout le site
        - un message s'affiche en haut de la carte
-
+ 
      Cliquer sur le cœur et entrer le MÊME mot de passe à nouveau
      désactive le mode.
   ────────────────────────────────────────────────────────── */
-  AMOUR_MOT_DE_PASSE: "monamour",
-
+  AMOUR_MOT_DE_PASSE: "270924",
+  AMOUR_NOM: "Angeline",   // pré-rempli dans le champ "Prénom" en Mode Amour
+ 
 };
+
+
+
