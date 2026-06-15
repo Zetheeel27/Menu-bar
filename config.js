@@ -32,7 +32,7 @@ const CONFIG = {
      Un bandeau affiché en haut de la carte (annonce, soirée
      spéciale, info...). Mets ACTIF sur false pour le masquer.
   ────────────────────────────────────────────────────────── */
-  MESSAGE_DUJOUR_ACTIF: false,
+  MESSAGE_DUJOUR_ACTIF: true,
   MESSAGE_DUJOUR: "🎉 Soirée spéciale ce soir — happy hour jusqu'à 22h !",
 
 
