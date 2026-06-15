@@ -32,8 +32,8 @@ const CONFIG = {
      Un bandeau affiché en haut de la carte (annonce, soirée
      spéciale, info...). Mets ACTIF sur false pour le masquer.
   ────────────────────────────────────────────────────────── */
-  MESSAGE_DUJOUR_ACTIF: false,
-  MESSAGE_DUJOUR: "🎉 Soirée spéciale ce soir — happy hour jusqu'à 22h !",
+  MESSAGE_DUJOUR_ACTIF: true,
+  MESSAGE_DUJOUR: "ouverture du bar à 20h",
 
 
   /* ──────────────────────────────────────────────────────────
@@ -59,14 +59,14 @@ const CONFIG = {
        l'onglet Restaurant (mode "bar uniquement" — c'est le
        mode utilisé la plupart du temps).
   ────────────────────────────────────────────────────────── */
-  HORAIRES_AUTO_ACTIF: false,
+  HORAIRES_AUTO_ACTIF: true,
 
   BAR_OUVERT:        true,
   RESTAURANT_OUVERT: false,
   RESTAURANT_ACTIF:  true,
 
   BAR_HORAIRES: {
-    debut: "18:00",
+    debut: "20:00",
     fin:   "02:00",
   },
   RESTAURANT_HORAIRES: {
