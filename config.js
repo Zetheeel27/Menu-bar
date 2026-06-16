@@ -99,6 +99,9 @@ const CONFIG = {
   ────────────────────────────────────────────────────────── */
   DISABLED_PRODUCTS: [
     "Piña Colada", "Mojito", "Mojito Fraise", "Jäger Bomb",
+    "Tasty Crousty", "Saumon Teriyaki", "Pâtes Carbonara", 
+    "Pâtes Saumon","Tajine Poulet Olives Pommes de terre", 
+    "Tajine Haricots", "Tajine Pruneaux",
   ],
 
 
