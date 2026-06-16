@@ -368,9 +368,6 @@
 <span class="secret-heart" id="secret-heart" onclick="openAmourPrompt()">&#9825;</span>
 
 <!-- ════ SUGGESTION BARMAN ════ -->
-<div id="barman-suggestion" style="display:none">
-  <span>Pas sûr ?</span> Demandez au barman un conseil.
-</div>
 
 <div id="panel-menu" class="panel active">
   <div class="menu-wrap">
@@ -637,41 +634,7 @@ function playDing() {
 }
 
 
-/* ----------------------------------------------------------
-   ④ SUGGESTION BARMAN (après 45s sans commander)
----------------------------------------------------------- */
-let suggestionTimer = null;
-let suggestionVisible = false;
 
-function resetSuggestionTimer() {
-  clearTimeout(suggestionTimer);
-  hideSuggestion();
-  suggestionTimer = setTimeout(showSuggestion, 45000);
-}
-
-function showSuggestion() {
-  if (suggestionVisible) return;
-  const el = document.getElementById('barman-suggestion');
-  el.style.display = 'block';
-  suggestionVisible = true;
-}
-
-function hideSuggestion() {
-  if (!suggestionVisible) return;
-  const el = document.getElementById('barman-suggestion');
-  el.style.display = 'none';
-  suggestionVisible = false;
-}
-
-// Disparaît au scroll
-window.addEventListener('scroll', () => { if (suggestionVisible) hideSuggestion(); }, { passive: true });
-
-// Réinitialise le timer à chaque interaction sur la carte
-document.addEventListener('click', (e) => {
-  if (document.getElementById('panel-menu').classList.contains('active')) {
-    resetSuggestionTimer();
-  }
-});
 
 
 /* ----------------------------------------------------------
