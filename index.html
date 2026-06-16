@@ -353,6 +353,19 @@
   .earnings-del:hover { color: var(--danger-text); transform: scale(1.15); }
   .earnings-empty { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; text-align: center; padding: 10px 0; }
 
+  /* ── Mode test (local) ── */
+  .test-section { border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem; }
+  .test-hint { font-size: 12px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; }
+  .test-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .test-row-label { font-size: 13px; color: var(--text); flex-shrink: 0; }
+  .test-toggle { display: flex; gap: 6px; }
+  .test-btn { padding: 7px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 11px; letter-spacing: 0.04em; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease; }
+  .test-btn:hover { border-color: var(--accent-dim); color: var(--text); }
+  .test-btn.active-auto   { border-color: var(--text-muted); color: var(--text); background: #1c1a16; }
+  .test-btn.active-open   { border-color: var(--success); color: var(--success); background: #122016; }
+  .test-btn.active-closed { border-color: var(--danger); color: var(--danger-text); background: var(--danger-bg); }
+  .test-banner { display: none; margin-bottom: 1rem; padding: 8px 14px; border: 1px solid var(--accent-dim); border-radius: 6px; font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 11px; letter-spacing: 0.04em; color: var(--accent); text-align: center; }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
@@ -516,7 +529,7 @@
         <div class="admin-title">Gestion des stocks</div>
         <button class="logout-btn" onclick="logout()">Se déconnecter</button>
       </div>
-8      <div class="save-banner" id="save-banner">&#10003; Modifications sauvegardées</div>
+      <div class="save-banner" id="save-banner">&#10003; Modifications sauvegardées</div>
       <div class="status-line" id="status-line"></div>
       <input class="search-input" id="ing-search" type="text" placeholder="Rechercher un ingrédient..." oninput="renderAdmin()">
 
@@ -529,6 +542,25 @@
         <summary class="ing-section-title">&#9670; Nourriture / Plats</summary>
         <div class="ing-grid" id="ing-grid-nourriture"></div>
       </details>
+
+      <div class="test-section">
+        <div class="admin-header">
+          <div class="admin-title">&#9670; Mode test (local uniquement)</div>
+        </div>
+        <div class="test-hint">
+          Force l'ouverture/fermeture du Bar et du Restaurant uniquement sur cet appareil, pour tester l'affichage de la carte sans toucher aux horaires réels. Les autres visiteurs ne voient jamais ce réglage — il reste dans la mémoire de ce navigateur.
+        </div>
+        <div id="test-banner" class="test-banner">&#9670; Mode test actif sur cet appareil</div>
+
+        <div class="test-row">
+          <span class="test-row-label">Bar</span>
+          <div class="test-toggle" id="test-toggle-bar"></div>
+        </div>
+        <div class="test-row">
+          <span class="test-row-label">Restaurant</span>
+          <div class="test-toggle" id="test-toggle-resto"></div>
+        </div>
+      </div>
 
       <div class="cash-section">
         <div class="admin-header">
@@ -708,9 +740,13 @@ function isWithinHours(horaires) {
   return current >= debut || current < fin;
 }
 function isBarOpen() {
+  if (testOverride.bar === 'open')   return true;
+  if (testOverride.bar === 'closed') return false;
   return CONFIG.HORAIRES_AUTO_ACTIF ? isWithinHours(CONFIG.BAR_HORAIRES) : CONFIG.BAR_OUVERT;
 }
 function isRestaurantOpen() {
+  if (testOverride.resto === 'open')   return true;
+  if (testOverride.resto === 'closed') return false;
   return CONFIG.HORAIRES_AUTO_ACTIF ? isWithinHours(CONFIG.RESTAURANT_HORAIRES) : CONFIG.RESTAURANT_OUVERT;
 }
 
@@ -728,6 +764,53 @@ function saveMissing() {
   catch(e) {}
 }
 const missing = loadMissing();
+
+
+/* ----------------------------------------------------------
+   MODE TEST (local) — forcer Bar/Restaurant ouvert ou fermé
+   uniquement sur cet appareil, sans toucher à config.js
+---------------------------------------------------------- */
+const TEST_OVERRIDE_KEY = "zaksbar_test_override_v1";
+function loadTestOverride() {
+  try {
+    const s = JSON.parse(localStorage.getItem(TEST_OVERRIDE_KEY));
+    return { bar: s?.bar || 'auto', resto: s?.resto || 'auto' };
+  } catch(e) { return { bar: 'auto', resto: 'auto' }; }
+}
+function saveTestOverride() {
+  try { localStorage.setItem(TEST_OVERRIDE_KEY, JSON.stringify(testOverride)); showSaveBanner(); }
+  catch(e) {}
+}
+let testOverride = loadTestOverride();
+
+function setTestOverride(target, value) {
+  testOverride[target] = value;
+  saveTestOverride();
+  renderTestToggles();
+  renderMenu();
+  if (document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
+}
+
+function renderTestToggles() {
+  const labels = { auto: 'Auto (réel)', open: 'Forcer ouvert', closed: 'Forcer fermé' };
+  const classes = { auto: 'active-auto', open: 'active-open', closed: 'active-closed' };
+
+  ['bar','resto'].forEach(target => {
+    const el = document.getElementById('test-toggle-' + target);
+    if (!el) return;
+    el.innerHTML = ['auto','open','closed'].map(val => {
+      const active = testOverride[target] === val;
+      return '<button class="test-btn ' + (active ? classes[val] : '') + '" onclick="setTestOverride(\'' + target + '\',\'' + val + '\')">'
+        + labels[val] + '</button>';
+    }).join('');
+  });
+
+  const banner = document.getElementById('test-banner');
+  if (banner) {
+    const active = testOverride.bar !== 'auto' || testOverride.resto !== 'auto';
+    banner.style.display = active ? 'block' : 'none';
+  }
+}
 
 
 /* ----------------------------------------------------------
@@ -1228,6 +1311,7 @@ function renderAdmin() {
   } else {
     foodDetails.style.display = 'none';
   }
+  renderTestToggles();
   renderEarnings();
 }
 
