@@ -22,6 +22,8 @@
     --danger-bg:   #1f1008;
     --danger-text: #e07060;
     --success:     #5a9e6a;
+    --vip-gold:    #f0c060;
+    --vip-bg:      #1a160a;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,6 +76,10 @@
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  @keyframes vipReveal {
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
   .cocktail-row { animation: rowReveal 0.4s ease both; }
   .menu-wrap { max-width: 640px; margin: 0 auto; padding: 0 1rem 6rem; animation: fadeInUp 0.6s ease both; }
   #menu-content { animation: fadeInUp 0.45s ease both; }
@@ -81,22 +87,95 @@
   /* ── Countdown timer ── */
   .countdown-timer {
     font-family: 'Helvetica Neue', Arial, sans-serif;
-    font-size: 22px;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.04em;
-    color: var(--accent);
-    margin-top: 4px;
-    display: block;
-    animation: fadeIn 0.5s ease both;
+    font-size: 22px; font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em; color: var(--accent);
+    margin-top: 4px; display: block; animation: fadeIn 0.5s ease both;
   }
-  .countdown-label {
-    font-size: 9px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    display: block;
-    margin-top: 2px;
+  .countdown-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); display: block; margin-top: 2px; }
+
+  /* ── VIP Badge header ── */
+  .vip-session-badge {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 12px; padding: 9px 16px;
+    border: 1px solid var(--vip-gold); border-radius: 8px;
+    background: var(--vip-bg);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px; color: var(--vip-gold);
+    animation: vipReveal 0.5s cubic-bezier(0.22,1,0.36,1) both;
   }
+  .vip-session-badge .vip-badge-name { font-family: 'Georgia', serif; font-size: 14px; }
+  .vip-logout-btn {
+    background: none; border: 1px solid rgba(240,192,96,0.3); border-radius: 4px;
+    color: rgba(240,192,96,0.6); font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px; letter-spacing: 0.08em; padding: 3px 9px; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s; margin-left: auto;
+  }
+  .vip-logout-btn:hover { border-color: var(--vip-gold); color: var(--vip-gold); }
+
+  /* ── VIP Login button (discret) ── */
+  .vip-login-hint {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-faint); cursor: pointer; display: inline-block;
+    margin-top: 10px; transition: color 0.25s;
+    padding: 4px 0; border-bottom: 1px solid transparent;
+  }
+  .vip-login-hint:hover { color: var(--vip-gold); border-bottom-color: rgba(240,192,96,0.3); }
+
+  /* ── VIP category highlight ── */
+  .category-title.cat-vip {
+    color: var(--vip-gold);
+    border-bottom-color: rgba(240,192,96,0.2);
+  }
+  .cocktail-row.vip-item .c-name { color: var(--vip-gold); }
+  .cocktail-row.vip-item .c-price { color: var(--vip-gold); }
+
+  /* ── VIP Login Modal ── */
+  #vip-login-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.78); z-index: 300;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(4px); animation: fadeIn 0.2s ease both;
+  }
+  #vip-login-overlay.open { display: flex; }
+  .vip-login-modal {
+    background: var(--vip-bg); border: 1px solid var(--vip-gold);
+    border-radius: 14px; padding: 2rem 1.75rem 2rem;
+    width: 100%; max-width: 320px; text-align: center;
+    animation: fadeInUp 0.35s cubic-bezier(0.22,1,0.36,1) both;
+    position: relative;
+  }
+  .vip-login-crown { font-size: 28px; margin-bottom: 0.75rem; }
+  .vip-login-title {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--vip-gold); margin-bottom: 1.5rem;
+  }
+  .vip-login-input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px; padding: 11px 14px; outline: none; margin-bottom: 10px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .vip-login-input:focus { border-color: var(--vip-gold); box-shadow: 0 0 0 3px rgba(240,192,96,0.08); }
+  .vip-login-input::placeholder { color: var(--text-muted); }
+  .vip-login-input.error { border-color: var(--danger); animation: shake 0.3s; }
+  .vip-login-err { font-size: 12px; font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--danger-text); min-height: 18px; margin-bottom: 10px; }
+  .vip-login-submit {
+    width: 100%; padding: 11px; border: none; border-radius: 7px;
+    background: linear-gradient(110deg, var(--vip-gold) 35%, #f8e0a0 50%, var(--vip-gold) 65%);
+    background-size: 250% 100%; animation: shimmer 4s linear infinite;
+    color: var(--bg); font-family: 'Georgia', serif; font-size: 13px;
+    letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .vip-login-submit:hover { opacity: 0.9; }
+  .vip-login-close {
+    position: absolute; top: 12px; right: 14px;
+    background: none; border: none; color: var(--text-muted);
+    font-size: 18px; cursor: pointer; transition: color 0.2s, transform 0.2s;
+  }
+  .vip-login-close:hover { color: var(--text); transform: rotate(90deg); }
 
   /* ── Suggestion barman ── */
   @keyframes slideUpSuggestion {
@@ -104,22 +183,13 @@
     to   { opacity: 1; transform: translateY(0); }
   }
   #barman-suggestion {
-    position: fixed;
-    bottom: 84px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--bg-card);
-    border: 1px solid var(--accent-dim);
-    border-radius: 10px;
-    padding: 10px 18px;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    font-size: 13px;
-    color: var(--text-muted);
-    white-space: nowrap;
-    z-index: 90;
+    position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%);
+    background: var(--bg-card); border: 1px solid var(--accent-dim);
+    border-radius: 10px; padding: 10px 18px;
+    font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px;
+    color: var(--text-muted); white-space: nowrap; z-index: 90;
     animation: slideUpSuggestion 0.4s cubic-bezier(0.22,1,0.36,1) both;
-    pointer-events: none;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   }
   #barman-suggestion span { color: var(--accent); }
 
@@ -129,37 +199,17 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   #order-recap {
-    background: var(--bg);
-    border: 1px solid var(--accent-dim);
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-top: 1.25rem;
-    animation: recapIn 0.35s cubic-bezier(0.22,1,0.36,1) both;
-    display: none;
+    background: var(--bg); border: 1px solid var(--accent-dim);
+    border-radius: 10px; padding: 14px 16px; margin-top: 1.25rem;
+    animation: recapIn 0.35s cubic-bezier(0.22,1,0.36,1) both; display: none;
   }
-  .recap-title {
-    font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--accent-dim); margin-bottom: 10px;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-  }
-  .recap-line {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 5px 0;
-    border-bottom: 1px solid var(--text-faint);
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    font-size: 13px;
-    animation: fadeInUp 0.25s ease both;
-  }
+  .recap-title { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent-dim); margin-bottom: 10px; font-family: 'Helvetica Neue', Arial, sans-serif; }
+  .recap-line { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--text-faint); font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; animation: fadeInUp 0.25s ease both; }
   .recap-line:last-of-type { border-bottom: none; }
   .recap-line-name { color: var(--text); }
   .recap-line-qty  { color: var(--text-muted); font-size: 12px; }
   .recap-line-price { color: var(--accent); }
-  .recap-total {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-top: 10px; padding-top: 10px;
-    border-top: 1px solid var(--accent-dim);
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-  }
+  .recap-total { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--accent-dim); font-family: 'Helvetica Neue', Arial, sans-serif; }
   .recap-total-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
   .recap-total-amount { font-size: 20px; color: var(--accent); font-family: 'Georgia', serif; }
 
@@ -225,6 +275,7 @@
   .order-fab { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); color: var(--bg); border: none; border-radius: 50px; padding: 14px 32px; font-family: 'Georgia',serif; font-size: 13px; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 24px rgba(200,169,110,0.25); transition: box-shadow 0.25s ease, transform 0.15s ease; z-index: 100; white-space: nowrap; background: linear-gradient(110deg, var(--accent) 35%, #f0d9a8 50%, var(--accent) 65%); background-size: 250% 100%; animation: shimmer 9s linear infinite; }
   .order-fab:hover { box-shadow: 0 6px 32px rgba(200,169,110,0.4); transform: translateX(-50%) translateY(-2px); }
   .order-fab:active { transform: translateX(-50%) translateY(0); }
+  .order-fab.vip-mode { background: linear-gradient(110deg, var(--vip-gold) 35%, #f8e8b0 50%, var(--vip-gold) 65%); background-size: 250% 100%; animation: shimmer 4s linear infinite; box-shadow: 0 4px 24px rgba(240,192,96,0.35); }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: flex-end; justify-content: center; backdrop-filter: blur(3px); animation: fadeIn 0.25s ease both; }
   .modal-overlay.open { display: flex; }
@@ -243,11 +294,22 @@
   .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
   .form-textarea { resize: vertical; min-height: 80px; }
 
+  /* VIP order badge */
+  .vip-order-badge {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    border: 1px solid var(--vip-gold); border-radius: 6px; margin-bottom: 14px;
+    background: var(--vip-bg); font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px; color: var(--vip-gold); animation: fadeIn 0.3s ease both;
+  }
+
   .cocktails-grid { display: flex; flex-direction: column; gap: 8px; }
   .cocktail-selector { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); gap: 12px; transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease; }
   .cocktail-selector.selected { border-color: var(--accent); background: #1c1810; }
+  .cocktail-selector.vip-selector { border-color: rgba(240,192,96,0.25); }
+  .cocktail-selector.vip-selector.selected { border-color: var(--vip-gold); background: var(--vip-bg); }
   .cocktail-selector.disabled { opacity: 0.35; pointer-events: none; }
   .cs-name { font-size: 14px; color: var(--text); flex: 1; }
+  .cs-name.vip-name { color: var(--vip-gold); }
   .cs-unavail { font-size: 10px; color: var(--danger-text); font-family: 'Helvetica Neue',Arial,sans-serif; }
   .cs-price-tag { font-size: 10px; color: var(--accent-dim); font-family: 'Helvetica Neue',Arial,sans-serif; margin-top: 3px; animation: fadeIn 0.25s ease both; }
   .order-section-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin: 14px 0 6px; font-family: 'Helvetica Neue',Arial,sans-serif; }
@@ -272,6 +334,8 @@
   .submit-btn:hover:not(:disabled) { background: #dfc080; }
   .submit-btn:active:not(:disabled) { transform: scale(0.99); }
   .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .submit-btn.vip-submit { background: var(--vip-gold); }
+  .submit-btn.vip-submit:hover:not(:disabled) { background: #f8e0a0; }
 
   .form-feedback { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 13px; text-align: center; margin-top: 12px; min-height: 20px; transition: opacity 0.3s ease; }
   .form-feedback.ok  { color: var(--success); animation: fadeIn 0.3s ease both; }
@@ -320,6 +384,19 @@
   .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,169,110,0.08); }
   .search-input::placeholder { color: var(--text-muted); }
 
+  /* VIP admin list */
+  .vip-admin-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .vip-admin-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: var(--vip-bg); border: 1px solid rgba(240,192,96,0.2);
+    border-radius: 7px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px; animation: fadeInUp 0.25s ease both;
+  }
+  .vip-admin-name { color: var(--vip-gold); flex: 1; font-family: 'Georgia', serif; font-size: 14px; }
+  .vip-admin-perks { color: var(--text-muted); font-size: 11px; flex: 2; line-height: 1.5; }
+  .vip-admin-pin { color: var(--text-faint); font-size: 11px; letter-spacing: 0.1em; }
+  .vip-empty-admin { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue', Arial, sans-serif; font-style: italic; padding: 6px 0; }
+
   details { margin-bottom: 12px; }
   details summary { display: block; cursor: pointer; list-style: none; transition: color 0.2s ease; }
   details summary::-webkit-details-marker { display: none; }
@@ -353,7 +430,6 @@
   .earnings-del:hover { color: var(--danger-text); transform: scale(1.15); }
   .earnings-empty { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue',Arial,sans-serif; font-style: italic; text-align: center; padding: 10px 0; }
 
-  /* ── Mode test (local) ── */
   .test-section { border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem; }
   .test-hint { font-size: 12px; font-family: 'Helvetica Neue',Arial,sans-serif; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; }
   .test-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
@@ -380,14 +456,27 @@
 
 <span class="secret-heart" id="secret-heart" onclick="openAmourPrompt()">&#9825;</span>
 
-<!-- ════ SUGGESTION BARMAN ════ -->
-
+<!-- ════ PANEL MENU ════ -->
 <div id="panel-menu" class="panel active">
   <div class="menu-wrap">
     <div class="menu-header">
       <div class="bar-name" id="site-title">ZAK'S BAR</div>
       <div class="bar-tagline" id="site-tagline">Cocktails faits maison</div>
       <div id="amour-banner" class="amour-banner" style="display:none">💕 Mode Amour activé — tout est offert pour toi !</div>
+
+      <!-- VIP session badge -->
+      <div id="vip-session-badge" class="vip-session-badge" style="display:none">
+        <span>⭐</span>
+        <span class="vip-badge-name" id="vip-badge-name"></span>
+        <span id="vip-badge-perks" style="font-size:11px;opacity:0.75"></span>
+        <button class="vip-logout-btn" onclick="logoutVip()">Déconnexion</button>
+      </div>
+
+      <!-- VIP login hint (visible si pas connecté, pas en mode amour) -->
+      <div id="vip-login-hint" class="vip-login-hint" onclick="openVipLogin()" style="display:none">
+        Accès V.I.P.
+      </div>
+
       <div id="message-jour" class="message-jour" style="display:none"></div>
       <div id="horaires-info" class="horaires-info" style="display:none"></div>
       <div class="menu-divider">&#9670;</div>
@@ -403,7 +492,7 @@
       <div id="vip-list"></div>
     </div>
   </div>
-  <button class="order-fab" onclick="openOrder()">&#9670; Commander</button>
+  <button class="order-fab" id="order-fab" onclick="openOrder()">&#9670; Commander</button>
 </div>
 
 <!-- ════ MODAL COMMANDE ════ -->
@@ -441,7 +530,6 @@
         <textarea class="form-textarea" id="order-message" placeholder="Moins fort, plus fort... (optionnel)"></textarea>
       </div>
 
-      <!-- ════ RÉCAP AVANT ENVOI ════ -->
       <div id="order-recap">
         <div class="recap-title">&#9670; Récapitulatif</div>
         <div id="recap-lines"></div>
@@ -460,15 +548,12 @@
         <div class="modal-title">&#9670; Règlement</div>
         <button class="modal-close" onclick="closeOrder()">&#10005;</button>
       </div>
-
       <div class="payment-total-box">
         <div class="payment-label">Total à régler</div>
         <div class="payment-amount" id="payment-total"></div>
       </div>
-
       <div class="payment-options">
         <div class="payment-option-title">Choisis ton mode de paiement</div>
-
         <div class="payment-option-card">
           <div class="poc-icon">&#9670;</div>
           <div class="poc-content">
@@ -477,7 +562,6 @@
           </div>
           <button id="paypal-btn" onclick="payPaypal()" class="poc-btn">Payer</button>
         </div>
-
         <div class="payment-option-card">
           <div class="poc-icon">&#9670;</div>
           <div class="poc-content">
@@ -486,10 +570,7 @@
           </div>
           <button id="cash-btn" onclick="payCash()" class="poc-btn">Espèces</button>
         </div>
-
-        <div class="payment-note">
-          La commande n'est envoyée au barman qu'une fois ton mode de paiement choisi.
-        </div>
+        <div class="payment-note">La commande n'est envoyée au barman qu'une fois ton mode de paiement choisi.</div>
       </div>
     </div>
 
@@ -508,6 +589,22 @@
       onkeydown="if(event.key==='Enter') checkAmourPassword()" autocomplete="off" style="width:100%">
     <div class="lock-error" id="amour-pw-error"></div>
     <button class="lock-btn" style="width:100%; margin-top:14px" onclick="checkAmourPassword()">Entrer</button>
+  </div>
+</div>
+
+<!-- ════ MODAL VIP LOGIN ════ -->
+<div id="vip-login-overlay" onclick="if(event.target===this) closeVipLogin()">
+  <div class="vip-login-modal">
+    <button class="vip-login-close" onclick="closeVipLogin()">&#10005;</button>
+    <div class="vip-login-crown">⭐</div>
+    <div class="vip-login-title">Espace V.I.P.</div>
+    <input class="vip-login-input" id="vip-nom-input" type="text" placeholder="Votre prénom"
+      autocomplete="off" onkeydown="if(event.key==='Enter') document.getElementById('vip-pin-input').focus()">
+    <input class="vip-login-input" id="vip-pin-input" type="password" placeholder="Code PIN"
+      inputmode="numeric" pattern="[0-9]*"
+      onkeydown="if(event.key==='Enter') checkVipLogin()" autocomplete="off">
+    <div class="vip-login-err" id="vip-login-err"></div>
+    <button class="vip-login-submit" onclick="checkVipLogin()">&#9670; Accéder</button>
   </div>
 </div>
 
@@ -543,15 +640,21 @@
         <div class="ing-grid" id="ing-grid-nourriture"></div>
       </details>
 
+      <!-- VIP section in admin -->
+      <details id="vip-details" >
+        <summary class="ing-section-title" style="color:var(--vip-gold)">&#9670; Comptes V.I.P.</summary>
+        <div style="margin-top:8px">
+          <div style="font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;color:var(--text-muted);line-height:1.6;margin-bottom:10px">
+          </div>
+          <div class="vip-admin-list" id="vip-admin-list"></div>
+        </div>
+      </details>
+
       <div class="test-section">
         <div class="admin-header">
           <div class="admin-title">&#9670; Mode test (local uniquement)</div>
         </div>
-        <div class="test-hint">
-          Force l'ouverture/fermeture du Bar et du Restaurant uniquement sur cet appareil, pour tester l'affichage de la carte sans toucher aux horaires réels. Les autres visiteurs ne voient jamais ce réglage — il reste dans la mémoire de ce navigateur.
-        </div>
         <div id="test-banner" class="test-banner">&#9670; Mode test actif sur cet appareil</div>
-
         <div class="test-row">
           <span class="test-row-label">Bar</span>
           <div class="test-toggle" id="test-toggle-bar"></div>
@@ -566,17 +669,14 @@
         <div class="admin-header">
           <div class="admin-title">Caisse — recettes</div>
         </div>
-
         <div class="earnings-total-box">
           <div class="payment-label">Total encaissé</div>
           <div class="payment-amount" id="earnings-total">0€</div>
         </div>
-
         <div class="earnings-input-row">
           <input class="form-input" id="earnings-input" type="number" min="0" step="0.5" placeholder="Montant en €" inputmode="decimal">
           <button class="poc-btn" onclick="addEarning()">&#9670; Ajouter</button>
         </div>
-
         <div class="earnings-list" id="earnings-list"></div>
         <button class="logout-btn" style="margin-top:12px" onclick="resetEarnings()">Réinitialiser la caisse</button>
       </div>
@@ -587,13 +687,13 @@
 
 <script>
 /* ════════════════════════════════════════════════════════════
-   MOTEUR ZAK'S BAR — avec les 5 nouvelles fonctionnalités
+   MOTEUR ZAK'S BAR — avec système VIP
 ════════════════════════════════════════════════════════════ */
 
 emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
 
 /* ----------------------------------------------------------
-   ① COMPTE À REBOURS JUSQU'À L'OUVERTURE
+   COMPTE À REBOURS
 ---------------------------------------------------------- */
 let countdownInterval = null;
 
@@ -602,9 +702,8 @@ function getSecondsUntilOpen(horaires) {
   const currentSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
   const [dh, dm] = horaires.debut.split(':').map(Number);
   const openSecs = dh * 3600 + dm * 60;
-
   let diff = openSecs - currentSecs;
-  if (diff < 0) diff += 86400; // lendemain
+  if (diff < 0) diff += 86400;
   return diff;
 }
 
@@ -619,81 +718,199 @@ function formatCountdown(secs) {
 
 function startCountdown(horaires, containerId) {
   if (countdownInterval) clearInterval(countdownInterval);
-
   function tick() {
     const el = document.getElementById(containerId);
     if (!el) { clearInterval(countdownInterval); return; }
     const secs = getSecondsUntilOpen(horaires);
-    if (secs <= 0) {
-      clearInterval(countdownInterval);
-      renderMenu();
-      return;
-    }
+    if (secs <= 0) { clearInterval(countdownInterval); renderMenu(); return; }
     el.querySelector('.countdown-timer').textContent = formatCountdown(secs);
   }
-
   tick();
   countdownInterval = setInterval(tick, 1000);
 }
 
 
 /* ----------------------------------------------------------
-   ② VIBRATION TACTILE (8ms sur chaque +/−)
+   VIBRATION & SON
 ---------------------------------------------------------- */
 function hapticTap() {
   if (navigator.vibrate) navigator.vibrate(8);
 }
 
-
-/* ----------------------------------------------------------
-   ③ SON "DING" — Web Audio API
----------------------------------------------------------- */
 function playDing() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
     gain.gain.setValueAtTime(0.35, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
   } catch(e) {}
 }
 
 
+/* ----------------------------------------------------------
+   SESSION VIP
+---------------------------------------------------------- */
+const VIP_SESSION_KEY = "zaksbar_vip_session_v1";
 
+let vipSession = null; // { nom, config } ou null
+
+function loadVipSession() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem(VIP_SESSION_KEY));
+    if (s && s.nom) {
+      // retrouve la config à jour dans CONFIG.VIP_COMPTES
+      const found = (CONFIG.VIP_COMPTES || []).find(c => c.nom === s.nom);
+      return found ? { nom: s.nom, config: found } : null;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function saveVipSession(compte) {
+  try { sessionStorage.setItem(VIP_SESSION_KEY, JSON.stringify({ nom: compte.nom })); }
+  catch(e) {}
+}
+
+function clearVipSession() {
+  try { sessionStorage.removeItem(VIP_SESSION_KEY); }
+  catch(e) {}
+}
+
+vipSession = loadVipSession();
+
+function openVipLogin() {
+  document.getElementById('vip-nom-input').value = '';
+  document.getElementById('vip-pin-input').value = '';
+  document.getElementById('vip-login-err').textContent = '';
+  document.getElementById('vip-login-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('vip-nom-input').focus(), 100);
+}
+
+function closeVipLogin() {
+  document.getElementById('vip-login-overlay').classList.remove('open');
+}
+
+function checkVipLogin() {
+  const nom = document.getElementById('vip-nom-input').value.trim();
+  const pin = document.getElementById('vip-pin-input').value.trim();
+  const errEl = document.getElementById('vip-login-err');
+
+  const compte = (CONFIG.VIP_COMPTES || []).find(c =>
+    c.nom.toLowerCase() === nom.toLowerCase() && c.pin === pin
+  );
+
+  if (compte) {
+    vipSession = { nom: compte.nom, config: compte };
+    saveVipSession(compte);
+    closeVipLogin();
+    renderMenu();
+    if (document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
+  } else {
+    errEl.textContent = 'Prénom ou code PIN incorrect.';
+    document.getElementById('vip-pin-input').classList.add('error');
+    document.getElementById('vip-pin-input').value = '';
+    setTimeout(() => document.getElementById('vip-pin-input').classList.remove('error'), 400);
+  }
+}
+
+function logoutVip() {
+  vipSession = null;
+  clearVipSession();
+  renderMenu();
+  if (document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
+}
+
+function renderVipHeader() {
+  const badge   = document.getElementById('vip-session-badge');
+  const hint    = document.getElementById('vip-login-hint');
+  const fab     = document.getElementById('order-fab');
+  const badgeNameEl  = document.getElementById('vip-badge-name');
+  const badgePerksEl = document.getElementById('vip-badge-perks');
+
+  if (amourMode) {
+    badge.style.display = 'none';
+    hint.style.display  = 'none';
+    return;
+  }
+
+  if (vipSession) {
+    const cfg = vipSession.config;
+    badgeNameEl.textContent = vipSession.nom;
+    const perks = [];
+    if (cfg.gratuit)           perks.push('Accès gratuit');
+    else if (cfg.prixReduit < 1) perks.push('-' + Math.round((1 - cfg.prixReduit) * 100) + '%');
+    if (cfg.cocktailsVip)      perks.push('Carte exclusive');
+    badgePerksEl.textContent = perks.join(' · ');
+    badge.style.display = 'flex';
+    hint.style.display  = 'none';
+    fab.classList.add('vip-mode');
+  } else {
+    badge.style.display = 'none';
+    // Affiche le hint seulement s'il y a des comptes VIP définis
+    hint.style.display = (CONFIG.VIP_COMPTES && CONFIG.VIP_COMPTES.length) ? 'inline-block' : 'none';
+    fab.classList.remove('vip-mode');
+  }
+}
 
 
 /* ----------------------------------------------------------
-   ⑤ RÉCAP DE COMMANDE (avant envoi)
-   Rendu dans renderOrderForm(), activé quand ≥1 article sélectionné
+   PRIX VIP
+   Retourne le prix effectif selon la session VIP / amourMode
+---------------------------------------------------------- */
+function getEffectivePrice(item) {
+  if (amourMode) return 0;
+  if (vipSession && vipSession.config.gratuit) return 0;
+  if (vipSession && vipSession.config.prixReduit !== 1) {
+    return Math.round(item.pricePerUnit * vipSession.config.prixReduit * 100) / 100;
+  }
+  return item.pricePerUnit || 0;
+}
+
+function getEffectivePriceDisplay(item) {
+  if (amourMode) return '💕 Offert';
+  if (vipSession && vipSession.config.gratuit) return '⭐ Offert';
+  if (vipSession && vipSession.config.prixReduit !== 1) {
+    const p = getEffectivePrice(item);
+    return p > 0 ? p + '€ ⭐' : '⭐ Offert';
+  }
+  return item.price;
+}
+
+function isFree(item) {
+  return getEffectivePrice(item) === 0;
+}
+
+function displayPrice(item) {
+  return getEffectivePriceDisplay(item);
+}
+
+
+/* ----------------------------------------------------------
+   RÉCAP
 ---------------------------------------------------------- */
 function renderRecap(items, grandTotal) {
-  const recap = document.getElementById('order-recap');
+  const recap   = document.getElementById('order-recap');
   const linesEl = document.getElementById('recap-lines');
   const totalEl = document.getElementById('recap-total-amount');
-
   const selected = items.filter(i => (quantities[i.name] || 0) > 0);
-  if (!selected.length) {
-    recap.style.display = 'none';
-    return;
-  }
+  if (!selected.length) { recap.style.display = 'none'; return; }
 
   let html = '';
   selected.forEach((item, idx) => {
     const qty = quantities[item.name];
-    const line = (!amourMode && item.pricePerUnit > 0) ? (item.pricePerUnit * qty) + '€' : (amourMode ? '💕' : 'Gratuit');
+    const effP = getEffectivePrice(item);
+    const line = effP > 0 ? (effP * qty) + '€' : (amourMode ? '💕' : '⭐');
     html += '<div class="recap-line" style="animation-delay:' + (idx * 30) + 'ms">'
       + '<span class="recap-line-name">' + item.name + '</span>'
       + '<span class="recap-line-qty">× ' + qty + '</span>'
       + '<span class="recap-line-price">' + line + '</span>'
     + '</div>';
   });
-  if (!amourMode && tipAmount > 0) {
+  if (!amourMode && !(vipSession && vipSession.config.gratuit) && tipAmount > 0) {
     html += '<div class="recap-line">'
       + '<span class="recap-line-name">Pourboire</span>'
       + '<span class="recap-line-qty"></span>'
@@ -702,7 +919,9 @@ function renderRecap(items, grandTotal) {
   }
 
   linesEl.innerHTML = html;
-  totalEl.textContent = amourMode ? '💕 Offert' : (grandTotal > 0 ? grandTotal + '€' : 'Gratuit');
+  if (amourMode) totalEl.textContent = '💕 Offert';
+  else if (vipSession && vipSession.config.gratuit) totalEl.textContent = '⭐ Offert';
+  else totalEl.textContent = grandTotal > 0 ? grandTotal + '€' : 'Gratuit';
   recap.style.display = 'block';
 }
 
@@ -710,44 +929,33 @@ function renderRecap(items, grandTotal) {
 /* ----------------------------------------------------------
    HELPERS
 ---------------------------------------------------------- */
-function getPaypalUrl(amount) {
-  return 'https://paypal.me/' + CONFIG.PAYPAL_USERNAME + '/' + amount + 'EUR';
-}
-function isFree(item) {
-  if (amourMode) return true;
-  return !item.pricePerUnit || item.pricePerUnit <= 0;
-}
-function displayPrice(item) {
-  return amourMode ? '💕 Offert' : item.price;
-}
+function getPaypalUrl(amount) { return 'https://paypal.me/' + CONFIG.PAYPAL_USERNAME + '/' + amount + 'EUR'; }
 function isAvailable(item) {
   if (CONFIG.DISABLED_PRODUCTS.includes(item.name)) return false;
   return !item.ingredients.some(ing => missing.has(ing));
 }
-function getMissing(item) {
-  return item.ingredients.filter(ing => missing.has(ing));
-}
-function parseHeure(hhmm) {
-  const parts = hhmm.split(':');
-  return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-}
-function isWithinHours(horaires) {
-  const now = new Date();
-  const current = now.getHours() * 60 + now.getMinutes();
-  const debut = parseHeure(horaires.debut);
-  const fin   = parseHeure(horaires.fin);
-  if (debut <= fin) return current >= debut && current < fin;
-  return current >= debut || current < fin;
+function getMissing(item) { return item.ingredients.filter(ing => missing.has(ing)); }
+function parseHeure(hhmm) { const p = hhmm.split(':'); return parseInt(p[0],10)*60+parseInt(p[1],10); }
+function isWithinHours(h) {
+  const now = new Date(); const cur = now.getHours()*60+now.getMinutes();
+  const d = parseHeure(h.debut), f = parseHeure(h.fin);
+  return d<=f ? (cur>=d&&cur<f) : (cur>=d||cur<f);
 }
 function isBarOpen() {
-  if (testOverride.bar === 'open')   return true;
-  if (testOverride.bar === 'closed') return false;
+  if (testOverride.bar==='open')   return true;
+  if (testOverride.bar==='closed') return false;
   return CONFIG.HORAIRES_AUTO_ACTIF ? isWithinHours(CONFIG.BAR_HORAIRES) : CONFIG.BAR_OUVERT;
 }
 function isRestaurantOpen() {
-  if (testOverride.resto === 'open')   return true;
-  if (testOverride.resto === 'closed') return false;
+  if (testOverride.resto==='open')   return true;
+  if (testOverride.resto==='closed') return false;
   return CONFIG.HORAIRES_AUTO_ACTIF ? isWithinHours(CONFIG.RESTAURANT_HORAIRES) : CONFIG.RESTAURANT_OUVERT;
+}
+
+/* VIP visibility : une catégorie "V.I.P." n'est visible que si session VIP active avec cocktailsVip */
+function canSeeVipCategory() {
+  if (amourMode) return true;
+  return vipSession && vipSession.config.cocktailsVip;
 }
 
 
@@ -765,17 +973,29 @@ function saveMissing() {
 }
 const missing = loadMissing();
 
+function toggleIngredient(name) {
+  if (missing.has(name)) missing.delete(name); else missing.add(name);
+  saveMissing(); renderAdmin(); renderMenu();
+}
+function getBoissonIngredients() {
+  const all = new Set(CONFIG.INGREDIENTS_BOISSONS);
+  CONFIG.COCKTAILS.forEach(c => c.ingredients.forEach(i => all.add(i)));
+  return [...all].sort((a,b)=>a.localeCompare(b,'fr'));
+}
+function getFoodIngredients() {
+  const all = new Set(CONFIG.INGREDIENTS_NOURRITURE);
+  CONFIG.PLATS.forEach(c => c.ingredients.forEach(i => all.add(i)));
+  return [...all].sort((a,b)=>a.localeCompare(b,'fr'));
+}
+
 
 /* ----------------------------------------------------------
-   MODE TEST (local) — forcer Bar/Restaurant ouvert ou fermé
-   uniquement sur cet appareil, sans toucher à config.js
+   MODE TEST
 ---------------------------------------------------------- */
 const TEST_OVERRIDE_KEY = "zaksbar_test_override_v1";
 function loadTestOverride() {
-  try {
-    const s = JSON.parse(localStorage.getItem(TEST_OVERRIDE_KEY));
-    return { bar: s?.bar || 'auto', resto: s?.resto || 'auto' };
-  } catch(e) { return { bar: 'auto', resto: 'auto' }; }
+  try { const s=JSON.parse(localStorage.getItem(TEST_OVERRIDE_KEY)); return {bar:s?.bar||'auto',resto:s?.resto||'auto'}; }
+  catch(e) { return {bar:'auto',resto:'auto'}; }
 }
 function saveTestOverride() {
   try { localStorage.setItem(TEST_OVERRIDE_KEY, JSON.stringify(testOverride)); showSaveBanner(); }
@@ -784,489 +1004,436 @@ function saveTestOverride() {
 let testOverride = loadTestOverride();
 
 function setTestOverride(target, value) {
-  testOverride[target] = value;
-  saveTestOverride();
-  renderTestToggles();
-  renderMenu();
+  testOverride[target]=value; saveTestOverride(); renderTestToggles(); renderMenu();
   if (document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
 }
-
 function renderTestToggles() {
-  const labels = { auto: 'Auto (réel)', open: 'Forcer ouvert', closed: 'Forcer fermé' };
-  const classes = { auto: 'active-auto', open: 'active-open', closed: 'active-closed' };
-
-  ['bar','resto'].forEach(target => {
-    const el = document.getElementById('test-toggle-' + target);
-    if (!el) return;
-    el.innerHTML = ['auto','open','closed'].map(val => {
-      const active = testOverride[target] === val;
-      return '<button class="test-btn ' + (active ? classes[val] : '') + '" onclick="setTestOverride(\'' + target + '\',\'' + val + '\')">'
-        + labels[val] + '</button>';
+  const labels={auto:'Auto (réel)',open:'Forcer ouvert',closed:'Forcer fermé'};
+  const classes={auto:'active-auto',open:'active-open',closed:'active-closed'};
+  ['bar','resto'].forEach(target=>{
+    const el=document.getElementById('test-toggle-'+target); if(!el) return;
+    el.innerHTML=['auto','open','closed'].map(val=>{
+      const active=testOverride[target]===val;
+      return '<button class="test-btn '+(active?classes[val]:'')+'" onclick="setTestOverride(\''+target+'\',\''+val+'\')">'
+        +labels[val]+'</button>';
     }).join('');
   });
-
-  const banner = document.getElementById('test-banner');
-  if (banner) {
-    const active = testOverride.bar !== 'auto' || testOverride.resto !== 'auto';
-    banner.style.display = active ? 'block' : 'none';
-  }
+  const banner=document.getElementById('test-banner');
+  if(banner) { const active=testOverride.bar!=='auto'||testOverride.resto!=='auto'; banner.style.display=active?'block':'none'; }
 }
 
 
 /* ----------------------------------------------------------
    MODE AMOUR
 ---------------------------------------------------------- */
-const AMOUR_STORAGE_KEY = "zaksbar_amour_mode";
-let amourMode = localStorage.getItem(AMOUR_STORAGE_KEY) === 'true';
+const AMOUR_STORAGE_KEY="zaksbar_amour_mode";
+let amourMode = localStorage.getItem(AMOUR_STORAGE_KEY)==='true';
 
-function toggleIngredient(name) {
-  if (missing.has(name)) missing.delete(name); else missing.add(name);
-  saveMissing(); renderAdmin(); renderMenu();
+function openAmourPrompt() { document.getElementById('amour-pw-input').value=''; document.getElementById('amour-pw-error').textContent=''; document.getElementById('amour-overlay').classList.add('open'); }
+function closeAmourPrompt() { document.getElementById('amour-overlay').classList.remove('open'); }
+function checkAmourPassword() {
+  const input=document.getElementById('amour-pw-input'); const error=document.getElementById('amour-pw-error');
+  if(input.value===CONFIG.AMOUR_MOT_DE_PASSE) {
+    if(amourMode) deactivateAmourMode(); else activateAmourMode();
+    closeAmourPrompt();
+  } else {
+    error.textContent='Mot de passe incorrect.';
+    input.classList.add('error'); input.value='';
+    setTimeout(()=>input.classList.remove('error'),400);
+  }
 }
-function getBoissonIngredients() {
-  const all = new Set(CONFIG.INGREDIENTS_BOISSONS);
-  CONFIG.COCKTAILS.forEach(c => c.ingredients.forEach(i => all.add(i)));
-  return [...all].sort((a,b) => a.localeCompare(b,'fr'));
+function activateAmourMode() {
+  amourMode=true; localStorage.setItem(AMOUR_STORAGE_KEY,'true');
+  document.getElementById('secret-heart').classList.add('active');
+  startHearts(); renderMenu();
+  if(document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
 }
-function getFoodIngredients() {
-  const all = new Set(CONFIG.INGREDIENTS_NOURRITURE);
-  CONFIG.PLATS.forEach(c => c.ingredients.forEach(i => all.add(i)));
-  return [...all].sort((a,b) => a.localeCompare(b,'fr'));
+function deactivateAmourMode() {
+  amourMode=false; localStorage.removeItem(AMOUR_STORAGE_KEY);
+  document.getElementById('secret-heart').classList.remove('active');
+  stopHearts(); renderMenu();
+  if(document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
 }
+const HEART_EMOJIS=['❤','💕','💖','💗','💓','💞'];
+let heartsInterval=null;
+function spawnHeart() {
+  const heart=document.createElement('div'); heart.className='heart-float';
+  heart.textContent=HEART_EMOJIS[Math.floor(Math.random()*HEART_EMOJIS.length)];
+  heart.style.left=(Math.random()*100)+'vw'; heart.style.fontSize=(12+Math.random()*18)+'px';
+  const dur=4+Math.random()*3; heart.style.animationDuration=dur+'s';
+  document.body.appendChild(heart); setTimeout(()=>heart.remove(),dur*1000+200);
+}
+function startHearts() { if(heartsInterval) return; heartsInterval=setInterval(spawnHeart,350); }
+function stopHearts() { clearInterval(heartsInterval); heartsInterval=null; document.querySelectorAll('.heart-float').forEach(h=>h.remove()); }
 
 
 /* ----------------------------------------------------------
    AFFICHAGE CARTE
 ---------------------------------------------------------- */
-let currentSection = 'boissons';
+let currentSection='boissons';
 
 function showSaveBanner() {
-  const b = document.getElementById('save-banner');
-  if (!b) return;
-  b.classList.add('show');
-  clearTimeout(b._t);
-  b._t = setTimeout(() => b.classList.remove('show'), 2000);
+  const b=document.getElementById('save-banner'); if(!b) return;
+  b.classList.add('show'); clearTimeout(b._t); b._t=setTimeout(()=>b.classList.remove('show'),2000);
 }
 
 function renderMessageDuJour() {
-  const el = document.getElementById('message-jour');
-  if (CONFIG.MESSAGE_DUJOUR_ACTIF && CONFIG.MESSAGE_DUJOUR) {
-    el.textContent = CONFIG.MESSAGE_DUJOUR;
-    el.style.display = 'block';
-  } else {
-    el.style.display = 'none';
-  }
+  const el=document.getElementById('message-jour');
+  if(CONFIG.MESSAGE_DUJOUR_ACTIF&&CONFIG.MESSAGE_DUJOUR) { el.textContent=CONFIG.MESSAGE_DUJOUR; el.style.display='block'; }
+  else el.style.display='none';
 
-  const hEl = document.getElementById('horaires-info');
-  if (CONFIG.HORAIRES_AUTO_ACTIF) {
-    const barOpen   = isBarOpen();
-    const restoOpen = CONFIG.RESTAURANT_ACTIF && isRestaurantOpen();
-    const bH = CONFIG.BAR_HORAIRES;
-    const rH = CONFIG.RESTAURANT_HORAIRES;
-    let isOpen = false;
-    let horairesActifs = bH;
-
-    if (currentSection === 'boissons') {
-      isOpen = barOpen;
-      horairesActifs = bH;
+  const hEl=document.getElementById('horaires-info');
+  if(CONFIG.HORAIRES_AUTO_ACTIF) {
+    const barOpen=isBarOpen(); const restoOpen=CONFIG.RESTAURANT_ACTIF&&isRestaurantOpen();
+    const bH=CONFIG.BAR_HORAIRES; const rH=CONFIG.RESTAURANT_HORAIRES;
+    let isOpen=false, horairesActifs=bH;
+    if(currentSection==='boissons') { isOpen=barOpen; horairesActifs=bH; }
+    else { isOpen=restoOpen; horairesActifs=rH; }
+    if(isOpen) {
+      hEl.innerHTML='Ouvert jusqu\'à '+horairesActifs.fin;
+      hEl.style.display='flex'; hEl.style.color='var(--accent)';
+      if(countdownInterval){clearInterval(countdownInterval);countdownInterval=null;}
     } else {
-      isOpen = restoOpen;
-      horairesActifs = rH;
-    }
-
-    if (isOpen) {
-      // Bar ouvert : affiche "Ouvert jusqu'à HH:MM"
-      hEl.innerHTML = 'Ouvert jusqu\'à ' + horairesActifs.fin;
-      hEl.style.display = 'flex';
-      hEl.style.color = 'var(--accent)';
-      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-    } else {
-      // Bar fermé : compte à rebours animé
-      const secs = getSecondsUntilOpen(horairesActifs);
-      hEl.innerHTML = 'Ouvre dans <span class="countdown-timer">' + formatCountdown(secs) + '</span>'
-      hEl.style.display = 'flex';
-      hEl.style.flexDirection = 'column';
-      hEl.style.color = 'var(--text-muted)';
-      startCountdown(horairesActifs, 'horaires-info');
+      const secs=getSecondsUntilOpen(horairesActifs);
+      hEl.innerHTML='Ouvre dans <span class="countdown-timer">'+formatCountdown(secs)+'</span>';
+      hEl.style.display='flex'; hEl.style.flexDirection='column'; hEl.style.color='var(--text-muted)';
+      startCountdown(horairesActifs,'horaires-info');
     }
   } else {
-    hEl.style.display = 'none';
-    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    hEl.style.display='none';
+    if(countdownInterval){clearInterval(countdownInterval);countdownInterval=null;}
   }
 }
 
 function switchMenuSection(section) {
-  currentSection = section;
-  document.querySelectorAll('.subtab-btn').forEach((btn, i) =>
-    btn.classList.toggle('active', ['boissons','resto'][i] === section));
-  const title   = document.getElementById('site-title');
-  const tagline = document.getElementById('site-tagline');
-  if (section === 'resto') {
-    title.textContent   = CONFIG.RESTO_NAME;
-    tagline.textContent = CONFIG.RESTO_TAGLINE;
-  } else {
-    title.textContent   = CONFIG.BAR_NAME;
-    tagline.textContent = CONFIG.BAR_TAGLINE;
-  }
+  currentSection=section;
+  document.querySelectorAll('.subtab-btn').forEach((btn,i)=>btn.classList.toggle('active',['boissons','resto'][i]===section));
+  const title=document.getElementById('site-title'); const tagline=document.getElementById('site-tagline');
+  if(section==='resto'){title.textContent=CONFIG.RESTO_NAME;tagline.textContent=CONFIG.RESTO_TAGLINE;}
+  else{title.textContent=CONFIG.BAR_NAME;tagline.textContent=CONFIG.BAR_TAGLINE;}
   renderMenu();
 }
 
 function renderItemsList(items, categoryOrder) {
-  let html = '';
-  let rowIndex = 0;
-  const categories = categoryOrder.filter(cat =>
-    cat === "Personnalisé" || items.some(c => c.category === cat));
+  let html=''; let rowIndex=0;
+  const categories = categoryOrder.filter(cat => {
+    if (cat === 'V.I.P.') return canSeeVipCategory() && items.some(c => c.category === cat);
+    if (cat === 'Personnalisé') return true;
+    return items.some(c => c.category === cat);
+  });
 
   categories.forEach(cat => {
-    html += '<div class="category-title">' + cat + '</div>';
-    if (cat === "Personnalisé") {
-      const texte = currentSection === "resto"
-        ? "&#9670; Demandez au chef en cuisine — préparation personnalisée selon les ingrédients disponibles."
-        : "&#9670; Demandez au barman — cocktail personnalisé selon les ingrédients disponibles.";
-      html += '<div class="perso-note">' + texte + '</div>';
-      return;
+    const isVipCat = cat === 'V.I.P.';
+    html += '<div class="category-title' + (isVipCat ? ' cat-vip' : '') + '">' + (isVipCat ? '⭐ ' : '') + cat + '</div>';
+    if(cat==='Personnalisé'){
+      const texte=currentSection==='resto'
+        ?"&#9670; Demandez au chef en cuisine — préparation personnalisée selon les ingrédients disponibles."
+        :"&#9670; Demandez au barman — cocktail personnalisé selon les ingrédients disponibles.";
+      html+='<div class="perso-note">'+texte+'</div>'; return;
     }
-    items.filter(c => c.category === cat).forEach(c => {
-      const avail = isAvailable(c);
-      const miss  = getMissing(c);
-      const delay = (rowIndex * 40) + 'ms';
-      rowIndex++;
-      html += '<div class="cocktail-row ' + (avail ? '' : 'unavail') + '" style="animation-delay:' + delay + '">'
-        + '<div class="c-left">'
-          + '<div class="c-name">' + c.name + '</div>'
-          + '<div class="c-desc">' + c.desc + '</div>'
-          + (!avail && miss.length ? '<div class="c-missing">&#9670; manque : ' + miss.join(', ') + '</div>' : '')
-        + '</div>'
-        + '<div class="c-right">'
-          + '<div class="c-price">' + displayPrice(c) + '</div>'
-          + (!avail ? '<span class="unavail-tag">indispo</span>' : '')
-        + '</div>'
-      + '</div>';
+    items.filter(c=>c.category===cat).forEach(c=>{
+      const avail=isAvailable(c); const miss=getMissing(c);
+      const delay=(rowIndex*40)+'ms'; rowIndex++;
+      html+='<div class="cocktail-row '+(avail?'':'unavail')+' '+(isVipCat?'vip-item':'')+'" style="animation-delay:'+delay+'">'
+        +'<div class="c-left">'
+          +'<div class="c-name">'+c.name+'</div>'
+          +'<div class="c-desc">'+c.desc+'</div>'
+          +(!avail&&miss.length?'<div class="c-missing">&#9670; manque : '+miss.join(', ')+'</div>':'')
+        +'</div>'
+        +'<div class="c-right">'
+          +'<div class="c-price">'+displayPrice(c)+'</div>'
+          +(!avail?'<span class="unavail-tag">indispo</span>':'')
+        +'</div>'
+      +'</div>';
     });
   });
   return html;
 }
 
 function renderClosedMessage(section) {
-  const horairesActifs = section === 'resto' ? CONFIG.RESTAURANT_HORAIRES : CONFIG.BAR_HORAIRES;
   return '<div class="perso-note">'
-    + (section === 'resto' ? '&#9670; Le restaurant est actuellement fermé.' : '&#9670; Le bar est actuellement fermé.')
-    + '</div>';
+    +(section==='resto'?'&#9670; Le restaurant est actuellement fermé.':'&#9670; Le bar est actuellement fermé.')
+  +'</div>';
 }
 
 function renderVIP() {
-  const section = document.getElementById('vip-section');
-  if (!CONFIG.VIP_ACTIF) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-  document.getElementById('vip-title').textContent = CONFIG.VIP_TITLE;
-  const listEl = document.getElementById('vip-list');
-  if (!CONFIG.VIP_LIST.length) {
-    listEl.innerHTML = '<div class="vip-empty">Aucun V.I.P. pour le moment</div>'; return;
-  }
-  listEl.innerHTML = CONFIG.VIP_LIST.map((name, i) =>
-    '<div class="vip-item" style="animation-delay:' + (i * 0.08) + 's">' + name + '</div>'
-  ).join('');
+  const section=document.getElementById('vip-section');
+  if(!CONFIG.VIP_ACTIF){section.style.display='none';return;}
+  section.style.display='block';
+  document.getElementById('vip-title').textContent=CONFIG.VIP_TITLE;
+  const listEl=document.getElementById('vip-list');
+  if(!CONFIG.VIP_LIST.length){listEl.innerHTML='<div class="vip-empty">Aucun V.I.P. pour le moment</div>';return;}
+  listEl.innerHTML=CONFIG.VIP_LIST.map((name,i)=>'<div class="vip-item" style="animation-delay:'+(i*0.08)+'s">'+name+'</div>').join('');
 }
 
 function renderAmourBanner() {
-  document.getElementById('amour-banner').style.display = amourMode ? 'block' : 'none';
+  document.getElementById('amour-banner').style.display=amourMode?'block':'none';
 }
 
 function renderMenu() {
   renderMessageDuJour();
   renderAmourBanner();
+  renderVipHeader();
   renderVIP();
 
-  const subtabs = document.querySelector('.menu-subtabs');
-  if (subtabs) subtabs.style.display = CONFIG.RESTAURANT_ACTIF ? 'flex' : 'none';
-  if (!CONFIG.RESTAURANT_ACTIF) currentSection = 'boissons';
+  const subtabs=document.querySelector('.menu-subtabs');
+  if(subtabs) subtabs.style.display=CONFIG.RESTAURANT_ACTIF?'flex':'none';
+  if(!CONFIG.RESTAURANT_ACTIF) currentSection='boissons';
 
   let html;
-  if (currentSection === 'boissons') {
-    html = isBarOpen()
-      ? renderItemsList(CONFIG.COCKTAILS, ["Signatures","Classiques","V.I.P.","Personnalisé"])
-      : renderClosedMessage('boissons');
+  if(currentSection==='boissons'){
+    html=isBarOpen()
+      ?renderItemsList(CONFIG.COCKTAILS,["Signatures","Classiques","V.I.P.","Personnalisé"])
+      :renderClosedMessage('boissons');
   } else {
-    html = isRestaurantOpen()
-      ? renderItemsList(CONFIG.PLATS, ["Signatures","Classiques","Tajines","Personnalisé"])
-      : renderClosedMessage('resto');
+    html=isRestaurantOpen()
+      ?renderItemsList(CONFIG.PLATS,["Signatures","Classiques","Tajines","Personnalisé"])
+      :renderClosedMessage('resto');
   }
 
-  const content = document.getElementById('menu-content');
-  content.style.animation = 'none';
-  content.innerHTML = html;
-  void content.offsetWidth;
-  content.style.animation = '';
-  content.querySelectorAll('.cocktail-row').forEach(el => {
-    el.style.animationName = 'none';
-    void el.offsetWidth;
-    el.style.animationName = '';
-  });
+  const content=document.getElementById('menu-content');
+  content.style.animation='none'; content.innerHTML=html;
+  void content.offsetWidth; content.style.animation='';
+  content.querySelectorAll('.cocktail-row').forEach(el=>{el.style.animationName='none';void el.offsetWidth;el.style.animationName='';});
 }
 
 
 /* ----------------------------------------------------------
    FORMULAIRE DE COMMANDE
 ---------------------------------------------------------- */
-let quantities = {};
-let tipAmount  = 0;
+let quantities={};
+let tipAmount=0;
 
 function getOrderableItems() {
-  const drinks = isBarOpen() ? CONFIG.COCKTAILS.map(c => ({ ...c, section: 'Boissons' })) : [];
-  const food = (CONFIG.RESTAURANT_ACTIF && isRestaurantOpen())
-    ? CONFIG.PLATS.map(c => ({ ...c, section: 'Restaurant' })) : [];
-  return [...drinks, ...food];
+  const drinks = isBarOpen()
+    ? CONFIG.COCKTAILS
+        .filter(c => c.category !== 'V.I.P.' || canSeeVipCategory())
+        .map(c=>({...c,section:'Boissons'}))
+    : [];
+  const food = (CONFIG.RESTAURANT_ACTIF&&isRestaurantOpen())
+    ? CONFIG.PLATS.map(c=>({...c,section:'Restaurant'})) : [];
+  return [...drinks,...food];
 }
 
 function openOrder() {
-  quantities = {};
-  tipAmount  = 0;
-  getOrderableItems().forEach(c => quantities[c.name] = 0);
-
-  document.getElementById('modal-form').style.display    = 'block';
-  document.getElementById('modal-payment').style.display = 'none';
-  document.getElementById('order-recap').style.display   = 'none';
-
+  quantities={}; tipAmount=0;
+  getOrderableItems().forEach(c=>quantities[c.name]=0);
+  document.getElementById('modal-form').style.display='block';
+  document.getElementById('modal-payment').style.display='none';
+  document.getElementById('order-recap').style.display='none';
   renderOrderForm();
 
-  const orderNom   = document.getElementById('order-nom');
-  const orderMsg   = document.getElementById('order-message');
-  const modalTitle = document.getElementById('order-modal-title');
-  const tipGroup   = document.getElementById('tip-group');
+  const orderNom=document.getElementById('order-nom');
+  const orderMsg=document.getElementById('order-message');
+  const modalTitle=document.getElementById('order-modal-title');
+  const tipGroup=document.getElementById('tip-group');
+  const submitBtn=document.getElementById('submit-btn');
 
-  if (amourMode) {
-    orderNom.value       = CONFIG.AMOUR_NOM || '';
-    orderMsg.placeholder = 'Un petit mot pour ton chéri... 💕 (optionnel)';
-    modalTitle.innerHTML = '💕 Pour toi, ma chérie 💕';
-    tipGroup.style.display = 'none';
+  if(amourMode){
+    orderNom.value=CONFIG.AMOUR_NOM||'';
+    orderMsg.placeholder='Un petit mot pour ton chéri... 💕 (optionnel)';
+    modalTitle.innerHTML='💕 Pour toi, ma chérie 💕';
+    tipGroup.style.display='none';
+    submitBtn.classList.remove('vip-submit');
+  } else if(vipSession){
+    orderNom.value=vipSession.nom;
+    orderMsg.placeholder='Un mot pour le barman... (optionnel)';
+    modalTitle.innerHTML='⭐ Commande V.I.P.';
+    tipGroup.style.display=vipSession.config.gratuit?'none':'block';
+    submitBtn.classList.add('vip-submit');
   } else {
-    orderNom.value       = '';
-    orderMsg.placeholder = 'Moins fort, plus fort... (optionnel)';
-    modalTitle.innerHTML = '&#9670; Votre commande';
-    tipGroup.style.display = 'block';
+    orderNom.value='';
+    orderMsg.placeholder='Moins fort, plus fort... (optionnel)';
+    modalTitle.innerHTML='&#9670; Votre commande';
+    tipGroup.style.display='block';
+    submitBtn.classList.remove('vip-submit');
   }
-  orderMsg.value = '';
-
-  document.getElementById('form-feedback').textContent = '';
-  document.getElementById('form-feedback').className   = 'form-feedback';
-  document.querySelectorAll('.tip-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.amount === '0'));
-
+  orderMsg.value='';
+  document.getElementById('form-feedback').textContent='';
+  document.getElementById('form-feedback').className='form-feedback';
+  document.querySelectorAll('.tip-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==='0'));
   document.getElementById('modal-overlay').classList.add('open');
-  hideSuggestion();
-  clearTimeout(suggestionTimer);
 }
 
-function closeOrder() {
-  document.getElementById('modal-overlay').classList.remove('open');
-  resetSuggestionTimer();
-}
-
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeOrder();
-}
-
+function closeOrder() { document.getElementById('modal-overlay').classList.remove('open'); }
+function handleOverlayClick(e) { if(e.target===document.getElementById('modal-overlay')) closeOrder(); }
 function setTip(amount) {
-  tipAmount = amount;
-  document.querySelectorAll('.tip-btn').forEach(b =>
-    b.classList.toggle('active', parseInt(b.dataset.amount) === amount));
+  tipAmount=amount;
+  document.querySelectorAll('.tip-btn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.amount)===amount));
   renderOrderForm();
 }
-
-function changeQty(name, delta) {
-  hapticTap(); // ② Vibration tactile
-  quantities[name] = Math.max(0, (quantities[name] || 0) + delta);
-  renderOrderForm();
+function changeQty(name,delta) {
+  hapticTap(); quantities[name]=Math.max(0,(quantities[name]||0)+delta); renderOrderForm();
 }
 
 function renderOrderForm() {
-  const items = getOrderableItems();
-  const grid  = document.getElementById('cocktails-grid');
+  const items=getOrderableItems();
+  const grid=document.getElementById('cocktails-grid');
 
-  if (!items.length) {
-    grid.innerHTML = '<div class="ing-empty">Aucun article disponible pour le moment.</div>';
-    document.getElementById('order-total').style.display = 'none';
-    document.getElementById('order-recap').style.display = 'none';
-    const btn = document.getElementById('submit-btn');
-    btn.innerHTML = '&#9670; Indisponible';
-    btn.disabled  = true;
-    return;
+  if(!items.length){
+    grid.innerHTML='<div class="ing-empty">Aucun article disponible pour le moment.</div>';
+    document.getElementById('order-total').style.display='none';
+    document.getElementById('order-recap').style.display='none';
+    const btn=document.getElementById('submit-btn'); btn.innerHTML='&#9670; Indisponible'; btn.disabled=true; return;
   }
 
-  const hasDrinks    = items.some(i => i.section === 'Boissons');
-  const hasFood      = items.some(i => i.section === 'Restaurant');
-  const showSections = hasDrinks && hasFood;
+  const hasDrinks=items.some(i=>i.section==='Boissons');
+  const hasFood=items.some(i=>i.section==='Restaurant');
+  const showSections=hasDrinks&&hasFood;
 
-  let html = '';
-  let grandTotal  = 0;
-  let lastSection = null;
+  let html=''; let grandTotal=0; let lastSection=null;
 
-  items.forEach(item => {
-    if (showSections && item.section !== lastSection) {
-      html += '<div class="order-section-title">' + item.section + '</div>';
-      lastSection = item.section;
+  // VIP order badge
+  if(vipSession&&!amourMode){
+    html+='<div class="vip-order-badge">⭐ <strong>'+vipSession.nom+'</strong> &nbsp;·&nbsp; '
+      +(vipSession.config.gratuit?'Tout offert':(vipSession.config.prixReduit<1?'-'+Math.round((1-vipSession.config.prixReduit)*100)+'% sur les prix':'Prix normaux'))
+    +'</div>';
+  }
+
+  items.forEach(item=>{
+    if(showSections&&item.section!==lastSection){
+      html+='<div class="order-section-title">'+item.section+'</div>'; lastSection=item.section;
     }
-    const avail     = isAvailable(item);
-    const qty       = quantities[item.name] || 0;
-    const isPaid    = !isFree(item) && qty > 0;
-    const lineTotal = isPaid ? (item.pricePerUnit * qty) : 0;
-    if (isPaid) grandTotal += lineTotal;
+    const avail=isAvailable(item);
+    const qty=quantities[item.name]||0;
+    const effP=getEffectivePrice(item);
+    const isPaid=effP>0&&qty>0;
+    const lineTotal=isPaid?(effP*qty):0;
+    if(isPaid) grandTotal+=lineTotal;
+    const isVipItem=item.category==='V.I.P.';
 
-    html += '<div class="cocktail-selector ' + (qty > 0 ? 'selected' : '') + ' ' + (!avail ? 'disabled' : '') + '">'
-      + '<div>'
-        + '<div class="cs-name">' + item.name + '</div>'
-        + (!avail ? '<div class="cs-unavail">Indisponible ce soir</div>' : '')
-        + (isPaid ? '<div class="cs-price-tag">&#9670; ' + qty + ' × ' + item.price + ' = <strong>' + lineTotal + '€</strong></div>' : '')
-      + '</div>'
-      + '<div class="cs-qty">'
-        + '<button class="qty-btn" onclick="changeQty(\'' + item.name + '\',-1)">−</button>'
-        + '<span class="qty-val">' + qty + '</span>'
-        + '<button class="qty-btn" onclick="changeQty(\'' + item.name + '\',1)">+</button>'
-      + '</div>'
-    + '</div>';
+    html+='<div class="cocktail-selector '+(qty>0?'selected':'')+' '+(isVipItem?'vip-selector':'')+' '+(!avail?'disabled':'')+'">'
+      +'<div>'
+        +'<div class="cs-name '+(isVipItem?'vip-name':'')+'">'+item.name+'</div>'
+        +(!avail?'<div class="cs-unavail">Indisponible ce soir</div>':'')
+        +(isPaid?'<div class="cs-price-tag">&#9670; '+qty+' × '+effP+'€ = <strong>'+lineTotal+'€</strong></div>':'')
+      +'</div>'
+      +'<div class="cs-qty">'
+        +'<button class="qty-btn" onclick="changeQty(\''+item.name+'\',-1)">−</button>'
+        +'<span class="qty-val">'+qty+'</span>'
+        +'<button class="qty-btn" onclick="changeQty(\''+item.name+'\',1)">+</button>'
+      +'</div>'
+    +'</div>';
   });
 
-  grid.innerHTML = html;
-  grandTotal += tipAmount;
+  grid.innerHTML=html;
 
-  const totalEl = document.getElementById('order-total');
-  if (grandTotal > 0) {
-    const extra = tipAmount > 0
-      ? ' <span style="opacity:.6">(dont ' + tipAmount + '€ pourboire)</span>' : '';
-    totalEl.innerHTML = '<span class="total-label">Total à payer' + extra + '</span><span class="total-amount">' + grandTotal + '€</span>';
-    totalEl.style.display = 'flex';
-  } else {
-    totalEl.style.display = 'none';
-  }
+  // Tip : masqué si VIP gratuit ou amour
+  const forceFreeTip = amourMode || (vipSession && vipSession.config.gratuit);
+  if(!forceFreeTip) grandTotal+=tipAmount;
 
-  // ⑤ Récap animé
-  renderRecap(items, grandTotal);
+  const totalEl=document.getElementById('order-total');
+  if(grandTotal>0){
+    const extra=tipAmount>0&&!forceFreeTip?' <span style="opacity:.6">(dont '+tipAmount+'€ pourboire)</span>':'';
+    totalEl.innerHTML='<span class="total-label">Total à payer'+extra+'</span><span class="total-amount">'+grandTotal+'€</span>';
+    totalEl.style.display='flex';
+  } else { totalEl.style.display='none'; }
 
-  const btn = document.getElementById('submit-btn');
-  btn.disabled  = false;
-  btn.innerHTML = grandTotal > 0
-    ? '&#9670; Commander — ' + grandTotal + '€'
-    : '&#9670; Envoyer la commande';
+  renderRecap(items,grandTotal);
+
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=false;
+  btn.innerHTML=grandTotal>0?'&#9670; Commander — '+grandTotal+'€':'&#9670; Envoyer la commande';
 }
 
 
 /* ----------------------------------------------------------
-   ENVOI COMMANDE & PAIEMENT
+   ENVOI COMMANDE
 ---------------------------------------------------------- */
-let lastOrder = { nom: '', commande: '', heure: '', total: '', message: '' };
+let lastOrder={nom:'',commande:'',heure:'',total:'',message:''};
 
 async function submitOrder() {
-  const nom     = document.getElementById('order-nom').value.trim();
-  const message = document.getElementById('order-message').value.trim();
-  const fb      = document.getElementById('form-feedback');
-  const btn     = document.getElementById('submit-btn');
+  const nom=document.getElementById('order-nom').value.trim();
+  const message=document.getElementById('order-message').value.trim();
+  const fb=document.getElementById('form-feedback');
+  const btn=document.getElementById('submit-btn');
 
-  const items = getOrderableItems()
-    .filter(c => isAvailable(c) && (quantities[c.name] || 0) > 0)
-    .map(c => ({ name: c.name, qty: quantities[c.name], pricePerUnit: c.pricePerUnit || 0 }));
+  const items=getOrderableItems()
+    .filter(c=>isAvailable(c)&&(quantities[c.name]||0)>0)
+    .map(c=>({name:c.name,qty:quantities[c.name],effectivePrice:getEffectivePrice(c),pricePerUnit:c.pricePerUnit||0}));
 
-  if (!nom) {
-    fb.textContent = "Merci d'indiquer ton prénom.";
-    fb.className   = 'form-feedback err';
-    return;
-  }
-  if (!items.length) {
-    fb.textContent = 'Sélectionne au moins un article.';
-    fb.className   = 'form-feedback err';
-    return;
-  }
+  if(!nom){fb.textContent="Merci d'indiquer ton prénom.";fb.className='form-feedback err';return;}
+  if(!items.length){fb.textContent='Sélectionne au moins un article.';fb.className='form-feedback err';return;}
 
-  btn.disabled  = true;
-  btn.innerHTML = '⏳ Préparation...';
-  fb.textContent = '';
+  btn.disabled=true; btn.innerHTML='⏳ Préparation...'; fb.textContent='';
 
-  const now = new Date();
-  const heure = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
-    + ' à ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const now=new Date();
+  const heure=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 
-  const itemsTotal = amourMode ? 0 : items.reduce((sum, i) => sum + (i.pricePerUnit * i.qty), 0);
-  const total      = amourMode ? 0 : (itemsTotal + tipAmount);
-  const totalTxt   = amourMode ? '💕 Offert avec amour' : (total > 0 ? total + '€' : 'Gratuit');
+  const forceFreeTip=amourMode||(vipSession&&vipSession.config.gratuit);
+  const itemsTotal=items.reduce((sum,i)=>sum+(i.effectivePrice*i.qty),0);
+  const total=itemsTotal+(forceFreeTip?0:tipAmount);
+  let totalTxt;
+  if(amourMode) totalTxt='💕 Offert avec amour';
+  else if(vipSession&&vipSession.config.gratuit) totalTxt='⭐ Offert — V.I.P. '+vipSession.nom;
+  else totalTxt=(total>0?total+'€':'Gratuit');
 
-  let commandeTxt = items.map(i =>
-    (!amourMode && i.pricePerUnit > 0)
-      ? i.name + ' x' + i.qty + ' (' + (i.pricePerUnit * i.qty) + '€)'
-      : i.name + ' x' + i.qty
-  ).join(' | ');
-  if (!amourMode && tipAmount > 0) commandeTxt += ' | Pourboire (' + tipAmount + '€)';
+  let commandeTxt=items.map(i=>{
+    const p=i.effectivePrice;
+    return p>0?i.name+' x'+i.qty+' ('+Math.round(p*i.qty*100)/100+'€)':i.name+' x'+i.qty;
+  }).join(' | ');
+  if(!forceFreeTip&&tipAmount>0) commandeTxt+=' | Pourboire ('+tipAmount+'€)';
 
-  let finalMessage = message || 'Aucune';
-  if (amourMode) finalMessage = (message ? message + ' — ' : '') + '💕 Commande envoyée via le Mode Amour';
+  let finalMessage=message||'Aucune';
+  if(amourMode) finalMessage=(message?message+' — ':'')+' 💕 Commande envoyée via le Mode Amour';
+  else if(vipSession) finalMessage=(message?message+' — ':'')+vipSession.config.badgeEmail;
 
-  lastOrder = { nom, commande: commandeTxt, heure, total: totalTxt, message: finalMessage };
+  lastOrder={nom,commande:commandeTxt,heure,total:totalTxt,message:finalMessage};
 
-  if (total === 0) {
-    try {
+  if(total===0){
+    try{
       await sendOrderEmail(null);
-      playDing(); // ③ Son ding
-      btn.innerHTML  = '✓ Commande envoyée !';
-      fb.textContent = amourMode ? 'Envoyé avec tout mon amour 💕' : 'On prépare ça pour toi 🍹';
-      fb.className   = 'form-feedback ok';
-      setTimeout(closeOrder, 2400);
-    } catch (err) {
+      playDing();
+      btn.innerHTML='✓ Commande envoyée !';
+      fb.textContent=amourMode?'Envoyé avec tout mon amour 💕':(vipSession?'⭐ Commande VIP envoyée !':'On prépare ça pour toi 🍹');
+      fb.className='form-feedback ok';
+      setTimeout(closeOrder,2400);
+    } catch(err){
       console.error(err);
-      btn.disabled   = false;
-      btn.innerHTML  = '&#9670; Envoyer la commande';
-      fb.textContent = "Erreur d'envoi — code : " + (err.status || err.text || 'inconnu');
-      fb.className   = 'form-feedback err';
+      btn.disabled=false; btn.innerHTML='&#9670; Envoyer la commande';
+      fb.textContent="Erreur d'envoi — code : "+(err.status||err.text||'inconnu');
+      fb.className='form-feedback err';
     }
   } else {
-    btn.innerHTML  = '✓ Commande prête';
-    fb.textContent = 'Total : ' + total + '€ — choisis ton mode de paiement';
-    fb.className   = 'form-feedback ok';
-    setTimeout(() => showPaymentInfo(total), 400);
+    btn.innerHTML='✓ Commande prête';
+    fb.textContent='Total : '+total+'€ — choisis ton mode de paiement';
+    fb.className='form-feedback ok';
+    setTimeout(()=>showPaymentInfo(total),400);
   }
 }
 
 function sendOrderEmail(modeLabel) {
-  let message = lastOrder.message;
-  if (modeLabel) {
-    message = (message && message !== 'Aucune') ? (message + ' — ' + modeLabel) : modeLabel;
-  }
-  return emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, {
-    nom:      lastOrder.nom,
-    commande: lastOrder.commande,
-    message:  message,
-    heure:    lastOrder.heure,
-    total:    lastOrder.total,
+  let message=lastOrder.message;
+  if(modeLabel){message=(message&&message!=='Aucune')?(message+' — '+modeLabel):modeLabel;}
+  return emailjs.send(CONFIG.EMAILJS_SERVICE_ID,CONFIG.EMAILJS_TEMPLATE_ID,{
+    nom:lastOrder.nom, commande:lastOrder.commande,
+    message, heure:lastOrder.heure, total:lastOrder.total,
   });
 }
 
-let currentPaypalUrl = '';
+let currentPaypalUrl='';
 
 function showPaymentInfo(total) {
-  document.getElementById('modal-form').style.display    = 'none';
-  document.getElementById('modal-payment').style.display = 'block';
-  document.getElementById('payment-total').textContent   = total + '€';
-  currentPaypalUrl = getPaypalUrl(total);
-  const pBtn = document.getElementById('paypal-btn');
-  const cBtn = document.getElementById('cash-btn');
-  pBtn.textContent = 'Payer';   pBtn.disabled = false;
-  cBtn.textContent = 'Espèces'; cBtn.disabled = false;
+  document.getElementById('modal-form').style.display='none';
+  document.getElementById('modal-payment').style.display='block';
+  document.getElementById('payment-total').textContent=total+'€';
+  currentPaypalUrl=getPaypalUrl(total);
+  const pBtn=document.getElementById('paypal-btn'); const cBtn=document.getElementById('cash-btn');
+  pBtn.textContent='Payer'; pBtn.disabled=false;
+  cBtn.textContent='Espèces'; cBtn.disabled=false;
 }
 
 async function payPaypal() {
-  const btn = document.getElementById('paypal-btn');
-  btn.textContent = '...'; btn.disabled = true;
-  try { await sendOrderEmail('💳 Règlement choisi : PAYPAL'); } catch(err) { console.error(err); }
-  playDing(); // ③ Son ding
-  window.open(currentPaypalUrl, '_blank');
-  btn.textContent = '✓ Envoyé';
-  setTimeout(closeOrder, 1200);
+  const btn=document.getElementById('paypal-btn'); btn.textContent='...'; btn.disabled=true;
+  try{await sendOrderEmail('💳 Règlement choisi : PAYPAL');}catch(err){console.error(err);}
+  playDing(); window.open(currentPaypalUrl,'_blank');
+  btn.textContent='✓ Envoyé'; setTimeout(closeOrder,1200);
 }
 
 async function payCash() {
-  const btn = document.getElementById('cash-btn');
-  btn.textContent = '...'; btn.disabled = true;
-  try { await sendOrderEmail('💶 Règlement choisi : ESPÈCES au comptoir'); } catch(err) { console.error(err); }
-  playDing(); // ③ Son ding
-  btn.textContent = '✓ Noté';
-  setTimeout(closeOrder, 1200);
+  const btn=document.getElementById('cash-btn'); btn.textContent='...'; btn.disabled=true;
+  try{await sendOrderEmail('💶 Règlement choisi : ESPÈCES au comptoir');}catch(err){console.error(err);}
+  playDing(); btn.textContent='✓ Noté'; setTimeout(closeOrder,1200);
 }
 
 
@@ -1274,54 +1441,69 @@ async function payCash() {
    PANNEAU GESTION
 ---------------------------------------------------------- */
 function checkPassword() {
-  const input = document.getElementById('pw-input');
-  const error = document.getElementById('pw-error');
-  if (input.value === CONFIG.MOT_DE_PASSE) {
-    document.getElementById('lock-screen').style.display   = 'none';
-    document.getElementById('admin-content').style.display = 'block';
-    input.value = ''; error.textContent = '';
-    renderAdmin();
+  const input=document.getElementById('pw-input'); const error=document.getElementById('pw-error');
+  if(input.value===CONFIG.MOT_DE_PASSE){
+    document.getElementById('lock-screen').style.display='none';
+    document.getElementById('admin-content').style.display='block';
+    input.value=''; error.textContent=''; renderAdmin();
   } else {
-    error.textContent = 'Mot de passe incorrect.';
-    input.classList.add('error'); input.value = '';
-    setTimeout(() => input.classList.remove('error'), 400);
+    error.textContent='Mot de passe incorrect.';
+    input.classList.add('error'); input.value='';
+    setTimeout(()=>input.classList.remove('error'),400);
   }
 }
 
 function logout() {
-  document.getElementById('admin-content').style.display = 'none';
-  document.getElementById('lock-screen').style.display    = 'flex';
-  document.getElementById('pw-input').value = '';
-  document.getElementById('pw-error').textContent = '';
+  document.getElementById('admin-content').style.display='none';
+  document.getElementById('lock-screen').style.display='flex';
+  document.getElementById('pw-input').value=''; document.getElementById('pw-error').textContent='';
 }
 
 function renderAdmin() {
-  const search = (document.getElementById('ing-search') || { value: '' }).value.toLowerCase();
-  const boissons = getBoissonIngredients().filter(i => i.toLowerCase().includes(search));
-  const food     = getFoodIngredients().filter(i => i.toLowerCase().includes(search));
-  const count = missing.size;
-  document.getElementById('status-line').innerHTML = count > 0
-    ? '<span class="count">' + count + ' ingrédient' + (count > 1 ? 's' : '') + ' manquant' + (count > 1 ? 's' : '') + '</span> — certains éléments peuvent être indisponibles'
-    : '<span class="ok">Tout est disponible ✓</span>';
-  document.getElementById('ing-grid-boissons').innerHTML = buildIngredientGrid(boissons);
-  const foodDetails = document.getElementById('food-details');
-  if (CONFIG.RESTAURANT_ACTIF) {
-    foodDetails.style.display = 'block';
-    document.getElementById('ing-grid-nourriture').innerHTML = buildIngredientGrid(food);
-  } else {
-    foodDetails.style.display = 'none';
-  }
+  const search=(document.getElementById('ing-search')||{value:''}).value.toLowerCase();
+  const boissons=getBoissonIngredients().filter(i=>i.toLowerCase().includes(search));
+  const food=getFoodIngredients().filter(i=>i.toLowerCase().includes(search));
+  const count=missing.size;
+  document.getElementById('status-line').innerHTML=count>0
+    ?'<span class="count">'+count+' ingrédient'+(count>1?'s':'')+' manquant'+(count>1?'s':'')+'</span> — certains éléments peuvent être indisponibles'
+    :'<span class="ok">Tout est disponible ✓</span>';
+  document.getElementById('ing-grid-boissons').innerHTML=buildIngredientGrid(boissons);
+  const foodDetails=document.getElementById('food-details');
+  if(CONFIG.RESTAURANT_ACTIF){
+    foodDetails.style.display='block';
+    document.getElementById('ing-grid-nourriture').innerHTML=buildIngredientGrid(food);
+  } else { foodDetails.style.display='none'; }
+
+  renderVipAdminList();
   renderTestToggles();
   renderEarnings();
 }
 
 function buildIngredientGrid(list) {
-  if (!list.length) return '<div class="ing-empty">Aucun ingrédient</div>';
-  return list.map(ing => {
-    const out = missing.has(ing);
-    return '<button class="ing-btn ' + (out ? 'out' : '') + '" onclick="toggleIngredient(\'' + ing.replace(/'/g, "\\'") + '\')">'
-      + '<span class="ing-label">' + ing + '</span><span class="ing-dot"></span>'
-      + '</button>';
+  if(!list.length) return '<div class="ing-empty">Aucun ingrédient</div>';
+  return list.map(ing=>{
+    const out=missing.has(ing);
+    return '<button class="ing-btn '+(out?'out':'')+'" onclick="toggleIngredient(\''+ing.replace(/'/g,"\\'")+'\''+')">'
+      +'<span class="ing-label">'+ing+'</span><span class="ing-dot"></span></button>';
+  }).join('');
+}
+
+function renderVipAdminList() {
+  const listEl=document.getElementById('vip-admin-list');
+  const comptes=CONFIG.VIP_COMPTES||[];
+  if(!comptes.length){listEl.innerHTML='<div class="vip-empty-admin">Aucun compte VIP dans config.js</div>';return;}
+  listEl.innerHTML=comptes.map(c=>{
+    const perks=[];
+    if(c.gratuit) perks.push('Tout gratuit');
+    else if(c.prixReduit<1) perks.push('-'+Math.round((1-c.prixReduit)*100)+'% sur les prix');
+    else perks.push('Prix normaux');
+    if(c.cocktailsVip) perks.push('Carte V.I.P. exclusive');
+    if(c.badgeEmail) perks.push('Badge : '+c.badgeEmail);
+    return '<div class="vip-admin-row">'
+      +'<span class="vip-admin-name">⭐ '+c.nom+'</span>'
+      +'<span class="vip-admin-perks">'+perks.join('<br>')+'</span>'
+      +'<span class="vip-admin-pin">PIN : '+c.pin+'</span>'
+    +'</div>';
   }).join('');
 }
 
@@ -1329,58 +1511,29 @@ function buildIngredientGrid(list) {
 /* ----------------------------------------------------------
    CAISSE
 ---------------------------------------------------------- */
-const EARNINGS_STORAGE_KEY = "zaksbar_earnings_v1";
-function loadEarnings() {
-  try { const s = localStorage.getItem(EARNINGS_STORAGE_KEY); return s ? JSON.parse(s) : []; }
-  catch(e) { return []; }
+const EARNINGS_STORAGE_KEY="zaksbar_earnings_v1";
+function loadEarnings(){try{const s=localStorage.getItem(EARNINGS_STORAGE_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
+function saveEarnings(list){try{localStorage.setItem(EARNINGS_STORAGE_KEY,JSON.stringify(list));showSaveBanner();}catch(e){}}
+function addEarning(){
+  const input=document.getElementById('earnings-input'); const amount=parseFloat(input.value);
+  if(!amount||amount<=0) return;
+  const list=loadEarnings(); const now=new Date();
+  list.push({amount,time:now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});
+  saveEarnings(list); input.value=''; renderEarnings();
 }
-function saveEarnings(list) {
-  try { localStorage.setItem(EARNINGS_STORAGE_KEY, JSON.stringify(list)); showSaveBanner(); }
-  catch(e) {}
-}
-function addEarning() {
-  const input = document.getElementById('earnings-input');
-  const amount = parseFloat(input.value);
-  if (!amount || amount <= 0) return;
-  const list = loadEarnings();
-  const now = new Date();
-  list.push({
-    amount,
-    time: now.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' })
-      + ' à ' + now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' })
-  });
-  saveEarnings(list);
-  input.value = '';
-  renderEarnings();
-}
-function deleteEarning(index) {
-  const list = loadEarnings();
-  list.splice(index, 1);
-  saveEarnings(list);
-  renderEarnings();
-}
-function resetEarnings() {
-  if (!confirm('Réinitialiser toute la caisse ? Cette action est irréversible.')) return;
-  saveEarnings([]); renderEarnings();
-}
-function renderEarnings() {
-  const totalEl = document.getElementById('earnings-total');
-  const listEl  = document.getElementById('earnings-list');
-  if (!totalEl || !listEl) return;
-  const list  = loadEarnings();
-  const total = list.reduce((sum, e) => sum + e.amount, 0);
-  totalEl.textContent = (Math.round(total * 100) / 100) + '€';
-  if (!list.length) {
-    listEl.innerHTML = '<div class="earnings-empty">Aucun encaissement pour le moment</div>';
-    return;
-  }
-  listEl.innerHTML = list.map((e, i) =>
-    '<div class="earnings-row">'
-      + '<span class="earnings-amount">+' + e.amount + '€</span>'
-      + '<span class="earnings-time">' + e.time + '</span>'
-      + '<button class="earnings-del" onclick="deleteEarning(' + i + ')">&#10005;</button>'
-    + '</div>'
-  ).reverse().join('');
+function deleteEarning(index){const list=loadEarnings();list.splice(index,1);saveEarnings(list);renderEarnings();}
+function resetEarnings(){if(!confirm('Réinitialiser toute la caisse ? Cette action est irréversible.'))return;saveEarnings([]);renderEarnings();}
+function renderEarnings(){
+  const totalEl=document.getElementById('earnings-total'); const listEl=document.getElementById('earnings-list');
+  if(!totalEl||!listEl) return;
+  const list=loadEarnings(); const total=list.reduce((sum,e)=>sum+e.amount,0);
+  totalEl.textContent=(Math.round(total*100)/100)+'€';
+  if(!list.length){listEl.innerHTML='<div class="earnings-empty">Aucun encaissement pour le moment</div>';return;}
+  listEl.innerHTML=list.map((e,i)=>'<div class="earnings-row">'
+    +'<span class="earnings-amount">+'+e.amount+'€</span>'
+    +'<span class="earnings-time">'+e.time+'</span>'
+    +'<button class="earnings-del" onclick="deleteEarning('+i+')">&#10005;</button>'
+  +'</div>').reverse().join('');
 }
 
 
@@ -1388,85 +1541,20 @@ function renderEarnings() {
    ONGLETS PRINCIPAUX
 ---------------------------------------------------------- */
 function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) =>
-    b.classList.toggle('active', ['menu','admin'][i] === tab));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
-  if (tab === 'menu') resetSuggestionTimer();
-  else { clearTimeout(suggestionTimer); hideSuggestion(); }
-}
-
-
-/* ----------------------------------------------------------
-   MODE AMOUR 💕
----------------------------------------------------------- */
-function openAmourPrompt() {
-  document.getElementById('amour-pw-input').value = '';
-  document.getElementById('amour-pw-error').textContent = '';
-  document.getElementById('amour-overlay').classList.add('open');
-}
-function closeAmourPrompt() {
-  document.getElementById('amour-overlay').classList.remove('open');
-}
-function checkAmourPassword() {
-  const input = document.getElementById('amour-pw-input');
-  const error = document.getElementById('amour-pw-error');
-  if (input.value === CONFIG.AMOUR_MOT_DE_PASSE) {
-    if (amourMode) deactivateAmourMode(); else activateAmourMode();
-    closeAmourPrompt();
-  } else {
-    error.textContent = 'Mot de passe incorrect.';
-    input.classList.add('error'); input.value = '';
-    setTimeout(() => input.classList.remove('error'), 400);
-  }
-}
-function activateAmourMode() {
-  amourMode = true;
-  localStorage.setItem(AMOUR_STORAGE_KEY, 'true');
-  document.getElementById('secret-heart').classList.add('active');
-  startHearts(); renderMenu();
-  if (document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
-}
-function deactivateAmourMode() {
-  amourMode = false;
-  localStorage.removeItem(AMOUR_STORAGE_KEY);
-  document.getElementById('secret-heart').classList.remove('active');
-  stopHearts(); renderMenu();
-  if (document.getElementById('modal-overlay').classList.contains('open')) renderOrderForm();
-}
-
-const HEART_EMOJIS = ['❤','💕','💖','💗','💓','💞'];
-let heartsInterval = null;
-function spawnHeart() {
-  const heart = document.createElement('div');
-  heart.className = 'heart-float';
-  heart.textContent = HEART_EMOJIS[Math.floor(Math.random() * HEART_EMOJIS.length)];
-  heart.style.left = (Math.random() * 100) + 'vw';
-  heart.style.fontSize = (12 + Math.random() * 18) + 'px';
-  const duration = 4 + Math.random() * 3;
-  heart.style.animationDuration = duration + 's';
-  document.body.appendChild(heart);
-  setTimeout(() => heart.remove(), duration * 1000 + 200);
-}
-function startHearts() { if (heartsInterval) return; heartsInterval = setInterval(spawnHeart, 350); }
-function stopHearts() {
-  clearInterval(heartsInterval); heartsInterval = null;
-  document.querySelectorAll('.heart-float').forEach(h => h.remove());
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['menu','admin'][i]===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
 }
 
 
 /* ----------------------------------------------------------
    DÉMARRAGE
 ---------------------------------------------------------- */
-document.getElementById('site-title').textContent   = CONFIG.BAR_NAME;
-document.getElementById('site-tagline').textContent = CONFIG.BAR_TAGLINE;
+document.getElementById('site-title').textContent=CONFIG.BAR_NAME;
+document.getElementById('site-tagline').textContent=CONFIG.BAR_TAGLINE;
 renderMenu();
-
-if (amourMode) { document.getElementById('secret-heart').classList.add('active'); startHearts(); }
-
-// Timer horaires auto + suggestion barman
-if (CONFIG.HORAIRES_AUTO_ACTIF) setInterval(renderMenu, 60000);
-resetSuggestionTimer();
+if(amourMode){document.getElementById('secret-heart').classList.add('active');startHearts();}
+if(CONFIG.HORAIRES_AUTO_ACTIF) setInterval(renderMenu,60000);
 </script>
 
 </body>
