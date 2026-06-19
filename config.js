@@ -67,10 +67,20 @@ const CONFIG = {
       nom:          "Claire",
       pin:          "1234",
       gratuit:      false,
-      prixReduit:   0.5,
+      prixReduit:   0.3,
       cocktailsVip: true,
-      badgeEmail:   "⭐ Client VIP — tarif -50%"
+      badgeEmail:   "⭐ Client VIP — tarif -70%"
     },
+
+        {
+      nom:          "Zak",
+      pin:          "270924",
+      gratuit:      true,
+      prixReduit:   1,
+      cocktailsVip: true,
+      badgeEmail:   "⭐ Gérant — accès carte exclusive"
+    },
+
   ],
 
   /* ── 8. COCKTAILS ── */
@@ -93,7 +103,7 @@ const CONFIG = {
     },
     {
       name: "Tequila Sunrise",
-      category: "V.I.P.",
+      category: "Deluxe",
       price: "2€",
       pricePerUnit: 2,
       desc: "Tequila, jus d'orange, grenadine",
@@ -101,7 +111,7 @@ const CONFIG = {
     },
     {
       name: "Mojito Fraise",
-      category: "V.I.P.",
+      category: "Deluxe",
       price: "2€",
       pricePerUnit: 2,
       desc: "Rhum blanc, fraise fraîche, menthe, citron vert, sirop de sucre, eau gazeuse",
@@ -109,7 +119,7 @@ const CONFIG = {
     },
     {
       name: "Jäger Bomb",
-      category: "V.I.P.",
+      category: "Deluxe",
       price: "2€",
       pricePerUnit: 2,
       desc: "Jägermeister plongé dans une boisson énergisante",
@@ -201,5 +211,12 @@ const CONFIG = {
   /* ── 12. MODE AMOUR 💕 ── */
   AMOUR_MOT_DE_PASSE: "270924",
   AMOUR_NOM: "Angeline",
+
+  /* ── 13. DEMANDE D'AVIS ──
+     Après une commande (Paypal ou Espèces), le site peut demander une note
+     en étoiles. Cette demande s'affiche au maximum 1 fois par semaine et
+     par appareil (mémorisé sur le téléphone/ordinateur du client).
+     AVIS_ACTIF: false → désactive complètement la demande d'avis. */
+  AVIS_ACTIF: false,
 
 };
