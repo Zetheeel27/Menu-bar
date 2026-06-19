@@ -45,23 +45,6 @@
     0%, 100% { opacity: 0.35; }
     50%      { opacity: 0.85; }
   }
-  @keyframes goldLine {
-    0%   { background-position: -100% 0; }
-    100% { background-position: 200% 0; }
-  }
-  .tabs::after {
-    content: '';
-    position: absolute; bottom: -2px; left: 0; right: 0; height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%, transparent 20%,
-      rgba(200,169,110,0.08) 35%, rgba(240,217,168,0.75) 50%,
-      rgba(200,169,110,0.08) 65%, transparent 80%, transparent 100%
-    );
-    background-size: 300% 100%;
-    animation: goldLine 5s linear infinite;
-    pointer-events: none;
-  }
   .tabs { position: relative; }
 
   @keyframes revealTitle {
@@ -442,6 +425,115 @@
   .test-btn.active-closed { border-color: var(--danger); color: var(--danger-text); background: var(--danger-bg); }
   .test-banner { display: none; margin-bottom: 1rem; padding: 8px 14px; border: 1px solid var(--accent-dim); border-radius: 6px; font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 11px; letter-spacing: 0.04em; color: var(--accent); text-align: center; }
 
+  /* ── Historique de commande (rappel dernière commande) ── */
+  .history-banner {
+    display: none; align-items: center; gap: 12px;
+    padding: 12px 14px; margin-bottom: 1.25rem;
+    background: var(--bg); border: 1px solid var(--accent-dim);
+    border-radius: 8px; animation: fadeInUp 0.4s ease both;
+  }
+  .history-banner.show { display: flex; }
+  .history-banner-text { flex: 1; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .history-banner-text strong { color: var(--text); font-family: 'Georgia', serif; }
+  .history-recall-btn {
+    flex-shrink: 0; background: var(--accent); color: var(--bg); border: none;
+    border-radius: 6px; padding: 8px 14px; font-family: 'Georgia', serif;
+    font-size: 12px; letter-spacing: 0.06em; cursor: pointer; white-space: nowrap;
+    transition: background 0.2s ease, transform 0.1s ease;
+  }
+  .history-recall-btn:hover { background: #dfc080; }
+  .history-recall-btn:active { transform: scale(0.96); }
+
+  /* ── Notation rapide post-commande ── */
+  .rating-intro { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); text-align: center; margin-bottom: 1.75rem; }
+  .rating-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+  .rating-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; transition: border-color 0.25s ease; animation: fadeInUp 0.3s ease both; }
+  .rating-row.rated { border-color: var(--accent-dim); }
+  .rating-item-name { font-size: 14px; color: var(--text); flex: 1; }
+  .rating-stars { display: flex; gap: 2px; flex-shrink: 0; }
+  .rating-star { background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--text-faint); transition: color 0.12s ease, transform 0.1s ease; padding: 3px; -webkit-tap-highlight-color: transparent; }
+  .rating-star:hover  { transform: scale(1.18); }
+  .rating-star:active { transform: scale(0.88); }
+  .rating-star.filled { color: var(--accent); }
+  .rating-done-btn { width: 100%; padding: 14px; background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-family: 'Georgia',serif; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease; }
+  .rating-done-btn:hover { border-color: var(--accent-dim); color: var(--text); }
+  .rating-thanks { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: var(--success); text-align: center; min-height: 18px; margin-top: 10px; }
+
+  /* ── Split de l'addition ── */
+  .split-toggle {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+    background: none; border: 1px solid var(--border); border-radius: 50px;
+    color: var(--text-muted); font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 7px 16px; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .split-toggle:hover { border-color: var(--accent-dim); color: var(--text); }
+  .split-toggle.active { border-color: var(--accent); color: var(--accent); background: #1c1810; }
+  .split-panel { display: none; margin-top: 12px; padding: 14px; background: var(--bg); border: 1px solid var(--accent-dim); border-radius: 8px; animation: fadeInUp 0.3s ease both; }
+  .split-panel.open { display: block; }
+  .split-mode-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .split-mode-btn { flex: 1; padding: 8px 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; letter-spacing: 0.06em; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease; }
+  .split-mode-btn:hover { border-color: var(--accent-dim); color: var(--text); }
+  .split-mode-btn.active { border-color: var(--accent); color: var(--accent); background: #1c1810; }
+  .split-add-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .split-add-row .form-input { flex: 1; }
+  .split-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .split-chip { display: flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 50px; padding: 6px 6px 6px 12px; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: var(--text); animation: fadeIn 0.2s ease both; }
+  .split-chip-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: color 0.15s ease, background 0.15s ease; }
+  .split-chip-del:hover { color: var(--danger-text); background: var(--danger-bg); }
+  .split-empty { font-size: 12px; color: var(--text-muted); font-family: 'Helvetica Neue', Arial, sans-serif; font-style: italic; margin-bottom: 8px; }
+  .split-result { display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 1px solid var(--text-faint); }
+  .split-result-row { display: flex; justify-content: space-between; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; }
+  .split-result-row .name { color: var(--text-muted); }
+  .split-result-row .amount { color: var(--accent); }
+  .split-assign-title { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-dim); margin-bottom: 10px; font-family: 'Helvetica Neue', Arial, sans-serif; border-top: 1px solid var(--text-faint); padding-top: 12px; margin-top: 4px; }
+  .split-assign-item { padding: 10px 0; border-bottom: 1px solid var(--text-faint); animation: fadeInUp 0.25s ease both; }
+  .split-assign-item:last-child { border-bottom: none; }
+  .split-assign-item-name { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: var(--text); margin-bottom: 8px; }
+  .split-assign-item-qty { font-size: 11px; color: var(--text-muted); }
+  .split-assign-names { display: flex; flex-wrap: wrap; gap: 6px; }
+  .split-assign-btn { padding: 5px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 50px; color: var(--text-muted); font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease; }
+  .split-assign-btn:hover { border-color: var(--accent-dim); color: var(--text); }
+  .split-assign-btn.assigned { border-color: var(--accent); color: var(--accent); background: #1c1810; }
+
+  /* ── Confirmation plein écran ── */
+  #order-confirmed-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9000;
+    background: var(--bg); align-items: center; justify-content: center;
+    flex-direction: column; gap: 20px;
+  }
+  #order-confirmed-overlay.show { display: flex; }
+  @keyframes diamondExpand {
+    0%   { transform: scale(0.1) rotate(45deg); opacity: 0; }
+    45%  { transform: scale(1.08) rotate(45deg); opacity: 1; }
+    65%  { transform: scale(0.96) rotate(45deg); }
+    80%  { transform: scale(1.02) rotate(45deg); }
+    100% { transform: scale(1)    rotate(45deg); opacity: 1; }
+  }
+  @keyframes confirmedTextIn {
+    from { opacity: 0; transform: translateY(10px); letter-spacing: 0.35em; }
+    to   { opacity: 1; transform: translateY(0);    letter-spacing: 0.22em; }
+  }
+  @keyframes confirmedFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+  .confirmed-diamond {
+    width: 56px; height: 56px;
+    background: var(--accent);
+    animation: diamondExpand 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .confirmed-diamond.amour { background: #e0607a; }
+  .confirmed-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--text-muted);
+    animation: confirmedTextIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+  }
+  #order-confirmed-overlay.fade-out {
+    animation: confirmedFadeOut 0.4s ease forwards;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
@@ -466,7 +558,7 @@
 
       <!-- VIP session badge -->
       <div id="vip-session-badge" class="vip-session-badge" style="display:none">
-        <span>⭐</span>
+        <span>&#9670;</span>
         <span class="vip-badge-name" id="vip-badge-name"></span>
         <span id="vip-badge-perks" style="font-size:11px;opacity:0.75"></span>
         <button class="vip-logout-btn" onclick="logoutVip()">Déconnexion</button>
@@ -474,7 +566,7 @@
 
       <!-- VIP login hint (visible si pas connecté, pas en mode amour) -->
       <div id="vip-login-hint" class="vip-login-hint" onclick="openVipLogin()" style="display:none">
-        Accès V.I.P.
+        &#9670; Accès V.I.P.
       </div>
 
       <div id="message-jour" class="message-jour" style="display:none"></div>
@@ -510,9 +602,37 @@
         <input class="form-input" id="order-nom" type="text" placeholder="Votre prénom" autocomplete="off">
       </div>
 
+      <div class="history-banner" id="history-banner">
+        <div class="history-banner-text" id="history-banner-text"></div>
+        <button class="history-recall-btn" onclick="recallLastOrder()">&#9670; Recommander</button>
+      </div>
+
       <div class="form-group">
         <div class="cocktails-grid" id="cocktails-grid"></div>
         <div id="order-total" style="display:none;justify-content:space-between;align-items:center;margin-top:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--accent-dim);border-radius:6px;"></div>
+      </div>
+
+      <div class="form-group" id="split-group" style="display:none">
+        <button class="split-toggle" id="split-toggle-btn" onclick="toggleSplit()">&#9670; Diviser l'addition</button>
+        <div class="split-panel" id="split-panel">
+          <!-- Sélection du mode de split -->
+          <div class="split-mode-row">
+            <button class="split-mode-btn active" id="split-mode-equal" onclick="setSplitMode('equal')">Parts égales</button>
+            <button class="split-mode-btn" id="split-mode-items" onclick="setSplitMode('items')">Chacun ses articles</button>
+          </div>
+          <!-- Ajout des prénoms -->
+          <div class="split-add-row">
+            <input class="form-input" id="split-name-input" type="text" placeholder="Prénom" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();addSplitName();}">
+            <button class="poc-btn" onclick="addSplitName()">Ajouter</button>
+          </div>
+          <div class="split-chips" id="split-chips"></div>
+          <!-- Mode "chacun ses articles" : attribution des articles -->
+          <div id="split-assign-section" style="display:none">
+            <div class="split-assign-title">&#9670; Attribuer les articles</div>
+            <div id="split-assign-grid"></div>
+          </div>
+          <div id="split-result"></div>
+        </div>
       </div>
 
       <div class="form-group" id="tip-group">
@@ -574,6 +694,17 @@
       </div>
     </div>
 
+    <div id="modal-rating" style="display:none">
+      <div class="modal-header">
+        <div class="modal-title">&#9670; Votre avis</div>
+        <button class="modal-close" onclick="closeRating()">&#10005;</button>
+      </div>
+      <div class="rating-intro">Comment c'était ?</div>
+      <div class="rating-list" id="rating-list"></div>
+      <button class="rating-done-btn" onclick="closeRating()">&#9670; Terminer</button>
+      <div class="rating-thanks" id="rating-thanks"></div>
+    </div>
+
   </div>
 </div>
 
@@ -596,7 +727,7 @@
 <div id="vip-login-overlay" onclick="if(event.target===this) closeVipLogin()">
   <div class="vip-login-modal">
     <button class="vip-login-close" onclick="closeVipLogin()">&#10005;</button>
-    <div class="vip-login-crown">⭐</div>
+    <div class="vip-login-crown">&#9670;</div>
     <div class="vip-login-title">Espace V.I.P.</div>
     <input class="vip-login-input" id="vip-nom-input" type="text" placeholder="Votre prénom"
       autocomplete="off" onkeydown="if(event.key==='Enter') document.getElementById('vip-pin-input').focus()">
@@ -641,10 +772,12 @@
       </details>
 
       <!-- VIP section in admin -->
-      <details id="vip-details" >
+      <details id="vip-details" open>
         <summary class="ing-section-title" style="color:var(--vip-gold)">&#9670; Comptes V.I.P.</summary>
         <div style="margin-top:8px">
           <div style="font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;color:var(--text-muted);line-height:1.6;margin-bottom:10px">
+            Les comptes VIP se gèrent dans <strong style="color:var(--text)">config.js</strong> → section <strong style="color:var(--vip-gold)">VIP_COMPTES</strong>.
+            Chaque compte a un prénom, un code PIN, et des privilèges configurables.
           </div>
           <div class="vip-admin-list" id="vip-admin-list"></div>
         </div>
@@ -654,6 +787,7 @@
         <div class="admin-header">
           <div class="admin-title">&#9670; Mode test (local uniquement)</div>
         </div>
+        <div class="test-hint">Force l'ouverture/fermeture du Bar et du Restaurant uniquement sur cet appareil, pour tester l'affichage de la carte sans toucher aux horaires réels.</div>
         <div id="test-banner" class="test-banner">&#9670; Mode test actif sur cet appareil</div>
         <div class="test-row">
           <span class="test-row-label">Bar</span>
@@ -872,10 +1006,10 @@ function getEffectivePrice(item) {
 
 function getEffectivePriceDisplay(item) {
   if (amourMode) return '💕 Offert';
-  if (vipSession && vipSession.config.gratuit) return '⭐ Offert';
+  if (vipSession && vipSession.config.gratuit) return '&#9670; Offert';
   if (vipSession && vipSession.config.prixReduit !== 1) {
     const p = getEffectivePrice(item);
-    return p > 0 ? p + '€ ⭐' : '⭐ Offert';
+    return p > 0 ? p + '€ &#9670;' : '&#9670; Offert';
   }
   return item.price;
 }
@@ -903,7 +1037,7 @@ function renderRecap(items, grandTotal) {
   selected.forEach((item, idx) => {
     const qty = quantities[item.name];
     const effP = getEffectivePrice(item);
-    const line = effP > 0 ? (effP * qty) + '€' : (amourMode ? '💕' : '⭐');
+    const line = effP > 0 ? (effP * qty) + '€' : (amourMode ? '💕' : '&#9670;');
     html += '<div class="recap-line" style="animation-delay:' + (idx * 30) + 'ms">'
       + '<span class="recap-line-name">' + item.name + '</span>'
       + '<span class="recap-line-qty">× ' + qty + '</span>'
@@ -920,7 +1054,7 @@ function renderRecap(items, grandTotal) {
 
   linesEl.innerHTML = html;
   if (amourMode) totalEl.textContent = '💕 Offert';
-  else if (vipSession && vipSession.config.gratuit) totalEl.textContent = '⭐ Offert';
+  else if (vipSession && vipSession.config.gratuit) totalEl.textContent = '◆ Offert';
   else totalEl.textContent = grandTotal > 0 ? grandTotal + '€' : 'Gratuit';
   recap.style.display = 'block';
 }
@@ -1068,6 +1202,303 @@ function stopHearts() { clearInterval(heartsInterval); heartsInterval=null; docu
 
 
 /* ----------------------------------------------------------
+   HISTORIQUE DE COMMANDE (par appareil)
+---------------------------------------------------------- */
+const LAST_ORDER_KEY = "zaksbar_last_order_v1";
+
+function loadLastOrderHistory() {
+  try { return JSON.parse(localStorage.getItem(LAST_ORDER_KEY)); }
+  catch(e) { return null; }
+}
+function saveLastOrderHistory(nom, items) {
+  try {
+    localStorage.setItem(LAST_ORDER_KEY, JSON.stringify({
+      nom, items: items.map(i => ({ name: i.name, qty: i.qty }))
+    }));
+  } catch(e) {}
+}
+
+function renderHistoryBanner() {
+  const banner = document.getElementById('history-banner');
+  const textEl = document.getElementById('history-banner-text');
+  if (amourMode || vipSession) { banner.classList.remove('show'); return; }
+
+  const last = loadLastOrderHistory();
+  if (!last || !last.items || !last.items.length) { banner.classList.remove('show'); return; }
+
+  const orderable = getOrderableItems();
+  const valid = last.items.filter(li => orderable.some(o => o.name === li.name && isAvailable(o)));
+  if (!valid.length) { banner.classList.remove('show'); return; }
+
+  const summary = valid.map(i => i.qty + '× ' + i.name).join(', ');
+  textEl.innerHTML = 'Tu as commandé <strong>' + summary + '</strong> la dernière fois.';
+  banner.classList.add('show');
+}
+
+function recallLastOrder() {
+  const last = loadLastOrderHistory();
+  if (!last) return;
+  const orderable = getOrderableItems();
+  last.items.forEach(li => {
+    const found = orderable.find(o => o.name === li.name && isAvailable(o));
+    if (found) quantities[li.name] = li.qty;
+  });
+  const orderNom = document.getElementById('order-nom');
+  if (!orderNom.value.trim() && last.nom) orderNom.value = last.nom;
+  hapticTap();
+  renderOrderForm();
+}
+
+
+/* ----------------------------------------------------------
+   NOTATION RAPIDE POST-COMMANDE
+---------------------------------------------------------- */
+/* ----------------------------------------------------------
+   NOTATION RAPIDE POST-COMMANDE
+   — avis global sur le site, 1 fois par semaine par appareil
+---------------------------------------------------------- */
+const RATING_LAST_KEY = "zaksbar_rating_last_v1"; // timestamp de la dernière demande
+const RATING_WEEK_MS  = 7 * 24 * 60 * 60 * 1000;
+
+function shouldAskRating() {
+  // Demande d'avis désactivée depuis config.js
+  if (CONFIG.AVIS_ACTIF === false) return false;
+  // Pas de notation pour mode amour ou VIP gratuit
+  if (amourMode || (vipSession && vipSession.config.gratuit)) return false;
+  try {
+    const last = parseInt(localStorage.getItem(RATING_LAST_KEY) || '0', 10);
+    return (Date.now() - last) >= RATING_WEEK_MS;
+  } catch(e) { return false; }
+}
+
+function markRatingAsked() {
+  try { localStorage.setItem(RATING_LAST_KEY, Date.now().toString()); } catch(e) {}
+}
+
+let _pendingRatingDone = null;
+let _ratingGiven       = false;
+let _ratingStars       = 0;
+
+function showRatingStep(items, onDone) {
+  if (!shouldAskRating()) { if (onDone) onDone(null); return; }
+  markRatingAsked();
+
+  _pendingRatingDone = onDone || null;
+  _ratingGiven       = false;
+  _ratingStars       = 0;
+
+  document.getElementById('modal-form').style.display    = 'none';
+  document.getElementById('modal-payment').style.display = 'none';
+  document.getElementById('modal-rating').style.display  = 'block';
+  document.getElementById('rating-thanks').textContent   = '';
+  document.getElementById('modal-overlay').classList.add('open');
+
+  // Une seule ligne : le site lui-même
+  const listEl = document.getElementById('rating-list');
+  let stars = '';
+  for (let s = 1; s <= 5; s++) {
+    stars += '<button class="rating-star" data-star="' + s + '" onclick="setRatingStar(0,' + s + ')">&#9733;</button>';
+  }
+  listEl.innerHTML = '<div class="rating-row" id="rating-row-0" style="animation-delay:0ms">'
+    + '<div class="rating-item-name">Zak\'s Bar</div>'
+    + '<div class="rating-stars">' + stars + '</div>'
+  + '</div>';
+}
+
+function setRatingStar(idx, stars) {
+  hapticTap();
+  const row = document.getElementById('rating-row-' + idx);
+  if (!row) return;
+  row.querySelectorAll('.rating-star').forEach(btn => {
+    btn.classList.toggle('filled', parseInt(btn.dataset.star) <= stars);
+  });
+  row.classList.add('rated');
+  _ratingGiven = true;
+  _ratingStars = stars;
+  const thanks = document.getElementById('rating-thanks');
+  thanks.textContent = '◆';
+  setTimeout(() => { thanks.textContent = ''; }, 900);
+}
+
+function closeRating() {
+  const ratingNote = _ratingGiven
+    ? '⭐ Avis site : ' + '★'.repeat(_ratingStars) + '☆'.repeat(5 - _ratingStars) + ' (' + _ratingStars + '/5)'
+    : null;
+  closeOrder();
+  const done = _pendingRatingDone;
+  _pendingRatingDone = null;
+  _ratingGiven       = false;
+  _ratingStars       = 0;
+  if (done) done(ratingNote);
+}
+
+
+
+/* ----------------------------------------------------------
+   SPLIT DE L'ADDITION
+---------------------------------------------------------- */
+let splitNames = [];
+let splitOpen = false;
+let splitMode = 'equal'; // 'equal' | 'items'
+// splitAssign : { "Article x1": ["Prénom1"], "Article x2": ["Prénom1","Prénom2"], ... }
+let splitAssign = {};
+
+function toggleSplit() {
+  splitOpen = !splitOpen;
+  document.getElementById('split-toggle-btn').classList.toggle('active', splitOpen);
+  document.getElementById('split-panel').classList.toggle('open', splitOpen);
+  if (splitOpen) {
+    renderSplitChips();
+    renderSplitAssign();
+    renderSplitResult(getCurrentGrandTotal());
+    setTimeout(() => document.getElementById('split-name-input').focus(), 100);
+  }
+}
+
+function setSplitMode(mode) {
+  splitMode = mode;
+  document.getElementById('split-mode-equal').classList.toggle('active', mode === 'equal');
+  document.getElementById('split-mode-items').classList.toggle('active', mode === 'items');
+  document.getElementById('split-assign-section').style.display = (mode === 'items' && splitNames.length) ? 'block' : 'none';
+  renderSplitAssign();
+  renderSplitResult(getCurrentGrandTotal());
+}
+
+function getCurrentGrandTotal() {
+  const items = getOrderableItems();
+  const forceFreeTip = amourMode || (vipSession && vipSession.config.gratuit);
+  let total = 0;
+  items.forEach(item => {
+    const qty = quantities[item.name] || 0;
+    const effP = getEffectivePrice(item);
+    if (effP > 0 && qty > 0) total += effP * qty;
+  });
+  if (!forceFreeTip) total += tipAmount;
+  return total;
+}
+
+function addSplitName() {
+  const input = document.getElementById('split-name-input');
+  const name = input.value.trim();
+  if (!name) return;
+  splitNames.push(name);
+  input.value = '';
+  renderSplitChips();
+  if (splitMode === 'items') {
+    document.getElementById('split-assign-section').style.display = 'block';
+    renderSplitAssign();
+  }
+  renderSplitResult(getCurrentGrandTotal());
+}
+
+function removeSplitName(idx) {
+  const removed = splitNames[idx];
+  splitNames.splice(idx, 1);
+  // Retirer ce prénom de toutes les attributions
+  Object.keys(splitAssign).forEach(key => {
+    splitAssign[key] = splitAssign[key].filter(n => n !== removed);
+  });
+  if (!splitNames.length) document.getElementById('split-assign-section').style.display = 'none';
+  renderSplitChips();
+  renderSplitAssign();
+  renderSplitResult(getCurrentGrandTotal());
+}
+
+function renderSplitChips() {
+  const el = document.getElementById('split-chips');
+  if (!el) return;
+  el.innerHTML = splitNames.length
+    ? splitNames.map((n, i) => '<div class="split-chip">' + n
+        + '<button class="split-chip-del" onclick="removeSplitName(' + i + ')">&#10005;</button></div>').join('')
+    : '<div class="split-empty">Ajoute les prénoms du groupe</div>';
+}
+
+// Génère une clé unique par ligne article×unité pour l'attribution
+function getSplitItemKeys() {
+  const items = getOrderableItems();
+  const keys = [];
+  items.forEach(item => {
+    const qty = quantities[item.name] || 0;
+    const effP = getEffectivePrice(item);
+    if (effP > 0 && qty > 0) {
+      for (let u = 0; u < qty; u++) {
+        keys.push({ key: item.name + '::' + u, label: item.name, unit: u + 1, total: qty, price: effP });
+      }
+    }
+  });
+  return keys;
+}
+
+function toggleAssign(key, name) {
+  if (!splitAssign[key]) splitAssign[key] = [];
+  const idx = splitAssign[key].indexOf(name);
+  if (idx === -1) splitAssign[key].push(name);
+  else splitAssign[key].splice(idx, 1);
+  renderSplitAssign();
+  renderSplitResult(getCurrentGrandTotal());
+}
+
+function renderSplitAssign() {
+  const section = document.getElementById('split-assign-section');
+  const grid = document.getElementById('split-assign-grid');
+  if (!grid) return;
+  if (splitMode !== 'items' || !splitNames.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const itemKeys = getSplitItemKeys();
+  if (!itemKeys.length) { grid.innerHTML = '<div class="split-empty">Sélectionne des articles d\'abord</div>'; return; }
+
+  grid.innerHTML = itemKeys.map((item, i) => {
+    const assigned = splitAssign[item.key] || [];
+    const qtyLabel = item.total > 1 ? ' <span class="split-assign-item-qty">(' + item.unit + '/' + item.total + ')</span>' : '';
+    const btns = splitNames.map(n =>
+      '<button class="split-assign-btn ' + (assigned.includes(n) ? 'assigned' : '') + '" '
+      + 'onclick="toggleAssign(\'' + item.key.replace(/'/g, "\\'") + '\',\'' + n.replace(/'/g, "\\'") + '\')">' + n + '</button>'
+    ).join('');
+    return '<div class="split-assign-item" style="animation-delay:' + (i * 30) + 'ms">'
+      + '<div class="split-assign-item-name">' + item.label + qtyLabel + ' — <span style="color:var(--accent)">' + item.price + '€</span></div>'
+      + '<div class="split-assign-names">' + btns + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+function renderSplitResult(grandTotal) {
+  const el = document.getElementById('split-result');
+  if (!el) return;
+  if (!splitNames.length || !splitOpen) { el.innerHTML = ''; return; }
+
+  if (splitMode === 'equal') {
+    const share = Math.round((grandTotal / splitNames.length) * 100) / 100;
+    el.innerHTML = '<div class="split-result">'
+      + splitNames.map(n => '<div class="split-result-row"><span class="name">' + n + '</span><span class="amount">' + share + '€</span></div>').join('')
+    + '</div>';
+  } else {
+    // Mode "chacun ses articles"
+    const totals = {};
+    splitNames.forEach(n => totals[n] = 0);
+    const itemKeys = getSplitItemKeys();
+    itemKeys.forEach(item => {
+      const assigned = splitAssign[item.key] || [];
+      if (!assigned.length) return;
+      const share = item.price / assigned.length;
+      assigned.forEach(n => { if (totals[n] !== undefined) totals[n] += share; });
+    });
+    // Pourboire partagé également si applicable
+    const forceFreeTip = amourMode || (vipSession && vipSession.config.gratuit);
+    if (!forceFreeTip && tipAmount > 0) {
+      const tipShare = tipAmount / splitNames.length;
+      splitNames.forEach(n => totals[n] += tipShare);
+    }
+    el.innerHTML = '<div class="split-result">'
+      + splitNames.map(n => {
+          const amt = Math.round(totals[n] * 100) / 100;
+          return '<div class="split-result-row"><span class="name">' + n + '</span><span class="amount">' + (amt > 0 ? amt + '€' : '—') + '</span></div>';
+        }).join('')
+    + '</div>';
+  }
+}
+
+
+/* ----------------------------------------------------------
    AFFICHAGE CARTE
 ---------------------------------------------------------- */
 let currentSection='boissons';
@@ -1124,7 +1555,7 @@ function renderItemsList(items, categoryOrder) {
 
   categories.forEach(cat => {
     const isVipCat = cat === 'V.I.P.';
-    html += '<div class="category-title' + (isVipCat ? ' cat-vip' : '') + '">' + (isVipCat ? '⭐ ' : '') + cat + '</div>';
+    html += '<div class="category-title' + (isVipCat ? ' cat-vip' : '') + '">' + (isVipCat ? '&#9670; ' : '') + cat + '</div>';
     if(cat==='Personnalisé'){
       const texte=currentSection==='resto'
         ?"&#9670; Demandez au chef en cuisine — préparation personnalisée selon les ingrédients disponibles."
@@ -1183,7 +1614,7 @@ function renderMenu() {
   let html;
   if(currentSection==='boissons'){
     html=isBarOpen()
-      ?renderItemsList(CONFIG.COCKTAILS,["Signatures","Classiques","V.I.P.","Personnalisé"])
+      ?renderItemsList(CONFIG.COCKTAILS,["Signatures","Classiques","Deluxe","V.I.P.","Personnalisé"])
       :renderClosedMessage('boissons');
   } else {
     html=isRestaurantOpen()
@@ -1217,6 +1648,7 @@ function getOrderableItems() {
 
 function openOrder() {
   quantities={}; tipAmount=0;
+  splitNames=[]; splitOpen=false; splitMode='equal'; splitAssign={};
   getOrderableItems().forEach(c=>quantities[c.name]=0);
   document.getElementById('modal-form').style.display='block';
   document.getElementById('modal-payment').style.display='none';
@@ -1238,7 +1670,7 @@ function openOrder() {
   } else if(vipSession){
     orderNom.value=vipSession.nom;
     orderMsg.placeholder='Un mot pour le barman... (optionnel)';
-    modalTitle.innerHTML='⭐ Commande V.I.P.';
+    modalTitle.innerHTML='&#9670; Commande V.I.P.';
     tipGroup.style.display=vipSession.config.gratuit?'none':'block';
     submitBtn.classList.add('vip-submit');
   } else {
@@ -1252,11 +1684,52 @@ function openOrder() {
   document.getElementById('form-feedback').textContent='';
   document.getElementById('form-feedback').className='form-feedback';
   document.querySelectorAll('.tip-btn').forEach(b=>b.classList.toggle('active',b.dataset.amount==='0'));
+  // Réinitialiser UI split
+  const splitToggleBtn = document.getElementById('split-toggle-btn');
+  const splitPanel = document.getElementById('split-panel');
+  const splitGroup = document.getElementById('split-group');
+  if (splitToggleBtn) splitToggleBtn.classList.remove('active');
+  if (splitPanel) splitPanel.classList.remove('open');
+  if (splitGroup) splitGroup.style.display = 'none';
+  const splitModeEq = document.getElementById('split-mode-equal');
+  const splitModeIt = document.getElementById('split-mode-items');
+  if (splitModeEq) { splitModeEq.classList.add('active'); }
+  if (splitModeIt) { splitModeIt.classList.remove('active'); }
+  const splitAssignSec = document.getElementById('split-assign-section');
+  if (splitAssignSec) splitAssignSec.style.display = 'none';
+  const splitChips = document.getElementById('split-chips');
+  if (splitChips) splitChips.innerHTML = '';
+  const splitResult = document.getElementById('split-result');
+  if (splitResult) splitResult.innerHTML = '';
   document.getElementById('modal-overlay').classList.add('open');
 }
 
 function closeOrder() { document.getElementById('modal-overlay').classList.remove('open'); }
 function handleOverlayClick(e) { if(e.target===document.getElementById('modal-overlay')) closeOrder(); }
+
+function showOrderConfirmed(label, modeLabel, ratingNote) {
+  closeOrder();
+  const overlay = document.getElementById('order-confirmed-overlay');
+  const diamond = document.getElementById('confirmed-diamond');
+  const text    = document.getElementById('confirmed-text');
+  overlay.classList.remove('show','fade-out');
+  diamond.classList.toggle('amour', !!amourMode);
+  void overlay.offsetWidth;
+  text.textContent = label || 'Commande reçue';
+  overlay.classList.add('show');
+  setTimeout(() => {
+    overlay.classList.add('fade-out');
+    setTimeout(() => {
+      overlay.classList.remove('show','fade-out');
+      // Envoyer l'email avec la note éventuelle
+      let emailModeLabel = modeLabel || null;
+      if (ratingNote) {
+        emailModeLabel = emailModeLabel ? emailModeLabel + ' — ' + ratingNote : ratingNote;
+      }
+      sendOrderEmail(emailModeLabel).catch(err => console.error('Email error:', err));
+    }, 420);
+  }, 1700);
+}
 function setTip(amount) {
   tipAmount=amount;
   document.querySelectorAll('.tip-btn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.amount)===amount));
@@ -1285,7 +1758,7 @@ function renderOrderForm() {
 
   // VIP order badge
   if(vipSession&&!amourMode){
-    html+='<div class="vip-order-badge">⭐ <strong>'+vipSession.nom+'</strong> &nbsp;·&nbsp; '
+    html+='<div class="vip-order-badge">&#9670; <strong>'+vipSession.nom+'</strong> &nbsp;·&nbsp; '
       +(vipSession.config.gratuit?'Tout offert':(vipSession.config.prixReduit<1?'-'+Math.round((1-vipSession.config.prixReduit)*100)+'% sur les prix':'Prix normaux'))
     +'</div>';
   }
@@ -1331,6 +1804,15 @@ function renderOrderForm() {
 
   renderRecap(items,grandTotal);
 
+  // Split : visible seulement si total > 0 et pas mode amour/VIP gratuit
+  const forceFreeSplit = amourMode || (vipSession && vipSession.config.gratuit);
+  const splitGroup = document.getElementById('split-group');
+  if (splitGroup) splitGroup.style.display = (grandTotal > 0 && !forceFreeSplit) ? 'block' : 'none';
+  if (splitOpen && !forceFreeSplit) {
+    renderSplitAssign();
+    renderSplitResult(grandTotal);
+  }
+
   const btn=document.getElementById('submit-btn');
   btn.disabled=false;
   btn.innerHTML=grandTotal>0?'&#9670; Commander — '+grandTotal+'€':'&#9670; Envoyer la commande';
@@ -1365,7 +1847,7 @@ async function submitOrder() {
   const total=itemsTotal+(forceFreeTip?0:tipAmount);
   let totalTxt;
   if(amourMode) totalTxt='💕 Offert avec amour';
-  else if(vipSession&&vipSession.config.gratuit) totalTxt='⭐ Offert — V.I.P. '+vipSession.nom;
+  else if(vipSession&&vipSession.config.gratuit) totalTxt='&#9670; Offert — V.I.P. '+vipSession.nom;
   else totalTxt=(total>0?total+'€':'Gratuit');
 
   let commandeTxt=items.map(i=>{
@@ -1378,22 +1860,38 @@ async function submitOrder() {
   if(amourMode) finalMessage=(message?message+' — ':'')+' 💕 Commande envoyée via le Mode Amour';
   else if(vipSession) finalMessage=(message?message+' — ':'')+vipSession.config.badgeEmail;
 
+  // Ajouter le split dans le message si actif
+  if(splitOpen && splitNames.length && !amourMode && !(vipSession&&vipSession.config.gratuit)){
+    let splitTxt = '\n◆ SPLIT (' + (splitMode==='equal'?'parts égales':'chacun ses articles') + ') : ';
+    if(splitMode==='equal'){
+      const share = Math.round((total/splitNames.length)*100)/100;
+      splitTxt += splitNames.map(n=>n+' → '+share+'€').join(' | ');
+    } else {
+      const totals={};splitNames.forEach(n=>totals[n]=0);
+      getSplitItemKeys().forEach(item=>{
+        const assigned=splitAssign[item.key]||[];if(!assigned.length)return;
+        const share=item.price/assigned.length;
+        assigned.forEach(n=>{if(totals[n]!==undefined)totals[n]+=share;});
+      });
+      if(tipAmount>0) splitNames.forEach(n=>totals[n]+=tipAmount/splitNames.length);
+      splitTxt += splitNames.map(n=>n+' → '+(Math.round(totals[n]*100)/100)+'€').join(' | ');
+    }
+    finalMessage = (finalMessage==='Aucune'?'':finalMessage+' — ') + splitTxt;
+  }
+
   lastOrder={nom,commande:commandeTxt,heure,total:totalTxt,message:finalMessage};
 
   if(total===0){
-    try{
-      await sendOrderEmail(null);
-      playDing();
-      btn.innerHTML='✓ Commande envoyée !';
-      fb.textContent=amourMode?'Envoyé avec tout mon amour 💕':(vipSession?'⭐ Commande VIP envoyée !':'On prépare ça pour toi 🍹');
-      fb.className='form-feedback ok';
-      setTimeout(closeOrder,2400);
-    } catch(err){
-      console.error(err);
-      btn.disabled=false; btn.innerHTML='&#9670; Envoyer la commande';
-      fb.textContent="Erreur d'envoi — code : "+(err.status||err.text||'inconnu');
-      fb.className='form-feedback err';
-    }
+    playDing();
+    btn.innerHTML='✓ Commande prête';
+    fb.textContent=amourMode?'Envoyé avec tout mon amour 💕':(vipSession?'◆ Commande VIP':'On prépare ça pour toi 🍹');
+    fb.className='form-feedback ok';
+    const items = getOrderableItems().filter(c => isAvailable(c) && (quantities[c.name]||0) > 0);
+    const confirmedLabel = amourMode ? 'Avec tout mon amour 💕' : 'Commande reçue';
+    // Pas de notation pour amour/VIP gratuit
+    setTimeout(() => {
+      showOrderConfirmed(confirmedLabel, null, null);
+    }, 400);
   } else {
     btn.innerHTML='✓ Commande prête';
     fb.textContent='Total : '+total+'€ — choisis ton mode de paiement';
@@ -1421,19 +1919,72 @@ function showPaymentInfo(total) {
   const pBtn=document.getElementById('paypal-btn'); const cBtn=document.getElementById('cash-btn');
   pBtn.textContent='Payer'; pBtn.disabled=false;
   cBtn.textContent='Espèces'; cBtn.disabled=false;
+
+  // Afficher le split dans l'écran de paiement
+  let splitSummaryEl = document.getElementById('payment-split-summary');
+  if (!splitSummaryEl) {
+    splitSummaryEl = document.createElement('div');
+    splitSummaryEl.id = 'payment-split-summary';
+    splitSummaryEl.style.cssText = 'margin-bottom:1.25rem;';
+    const paymentTotalBox = document.querySelector('.payment-total-box');
+    if (paymentTotalBox) paymentTotalBox.after(splitSummaryEl);
+  }
+
+  if (splitOpen && splitNames.length) {
+    let rows = '';
+    if (splitMode === 'equal') {
+      const share = Math.round((total / splitNames.length) * 100) / 100;
+      rows = splitNames.map(n =>
+        '<div class="split-result-row"><span class="name">' + n + '</span><span class="amount">' + share + '€</span></div>'
+      ).join('');
+    } else {
+      const totals = {}; splitNames.forEach(n => totals[n] = 0);
+      getSplitItemKeys().forEach(item => {
+        const assigned = splitAssign[item.key] || []; if (!assigned.length) return;
+        const share = item.price / assigned.length;
+        assigned.forEach(n => { if (totals[n] !== undefined) totals[n] += share; });
+      });
+      if (tipAmount > 0) splitNames.forEach(n => totals[n] += tipAmount / splitNames.length);
+      rows = splitNames.map(n => {
+        const amt = Math.round(totals[n] * 100) / 100;
+        return '<div class="split-result-row"><span class="name">' + n + '</span><span class="amount">' + (amt > 0 ? amt + '€' : '—') + '</span></div>';
+      }).join('');
+    }
+    splitSummaryEl.innerHTML = '<div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent-dim);margin-bottom:8px;font-family:\'Helvetica Neue\',Arial,sans-serif;">&#9670; Répartition</div>'
+      + '<div class="split-result" style="border-top:none;padding-top:0;">' + rows + '</div>';
+    splitSummaryEl.style.display = 'block';
+  } else {
+    splitSummaryEl.style.display = 'none';
+  }
 }
 
 async function payPaypal() {
   const btn=document.getElementById('paypal-btn'); btn.textContent='...'; btn.disabled=true;
-  try{await sendOrderEmail('💳 Règlement choisi : PAYPAL');}catch(err){console.error(err);}
   playDing(); window.open(currentPaypalUrl,'_blank');
-  btn.textContent='✓ Envoyé'; setTimeout(closeOrder,1200);
+  btn.textContent='✓ Prêt';
+  const items = getOrderableItems().filter(c => isAvailable(c) && (quantities[c.name]||0) > 0);
+  const canRate = !amourMode && !(vipSession && vipSession.config.gratuit) && items.length;
+  if (canRate) {
+    showRatingStep(items, ratingNote => {
+      showOrderConfirmed('Commande reçue', '💳 Règlement choisi : PAYPAL', ratingNote);
+    });
+  } else {
+    showOrderConfirmed('Commande reçue', '💳 Règlement choisi : PAYPAL', null);
+  }
 }
 
 async function payCash() {
   const btn=document.getElementById('cash-btn'); btn.textContent='...'; btn.disabled=true;
-  try{await sendOrderEmail('💶 Règlement choisi : ESPÈCES au comptoir');}catch(err){console.error(err);}
-  playDing(); btn.textContent='✓ Noté'; setTimeout(closeOrder,1200);
+  playDing(); btn.textContent='✓ Noté';
+  const items = getOrderableItems().filter(c => isAvailable(c) && (quantities[c.name]||0) > 0);
+  const canRate = !amourMode && !(vipSession && vipSession.config.gratuit) && items.length;
+  if (canRate) {
+    showRatingStep(items, ratingNote => {
+      showOrderConfirmed('Commande reçue', '💶 Règlement choisi : ESPÈCES au comptoir', ratingNote);
+    });
+  } else {
+    showOrderConfirmed('Commande reçue', '💶 Règlement choisi : ESPÈCES au comptoir', null);
+  }
 }
 
 
@@ -1500,7 +2051,7 @@ function renderVipAdminList() {
     if(c.cocktailsVip) perks.push('Carte V.I.P. exclusive');
     if(c.badgeEmail) perks.push('Badge : '+c.badgeEmail);
     return '<div class="vip-admin-row">'
-      +'<span class="vip-admin-name">⭐ '+c.nom+'</span>'
+      +'<span class="vip-admin-name">&#9670; '+c.nom+'</span>'
       +'<span class="vip-admin-perks">'+perks.join('<br>')+'</span>'
       +'<span class="vip-admin-pin">PIN : '+c.pin+'</span>'
     +'</div>';
@@ -1556,6 +2107,12 @@ renderMenu();
 if(amourMode){document.getElementById('secret-heart').classList.add('active');startHearts();}
 if(CONFIG.HORAIRES_AUTO_ACTIF) setInterval(renderMenu,60000);
 </script>
+
+<!-- ════ CONFIRMATION PLEIN ÉCRAN ════ -->
+<div id="order-confirmed-overlay">
+  <div class="confirmed-diamond" id="confirmed-diamond"></div>
+  <div class="confirmed-text" id="confirmed-text">Commande reçue</div>
+</div>
 
 </body>
 </html>
