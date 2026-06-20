@@ -741,6 +741,101 @@
     background: rgba(212,175,90,0.06);
   }
   body.fete-mode .vip-section::before { opacity: 0.7; }
+
+  /* ── Temps d'attente ── */
+  .wait-estimate {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 10px; padding: 10px 14px;
+    border: 1px solid var(--accent-dim); border-radius: 8px;
+    background: var(--bg); font-family: 'Helvetica Neue', Arial, sans-serif;
+    animation: fadeInUp 0.35s ease both;
+  }
+  .wait-icon { font-size: 16px; flex-shrink: 0; }
+  .wait-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 2px; }
+  .wait-value { font-size: 18px; color: var(--accent); font-family: 'Georgia', serif; }
+  .wait-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+  /* Confirmation attente */
+  .confirmed-wait {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-muted); margin-top: 6px;
+    animation: confirmedTextIn 0.5s cubic-bezier(0.22,1,0.36,1) 0.55s both;
+  }
+  .confirmed-wait span { color: var(--accent); }
+
+  /* ── Compte à rebours post-commande ── */
+  @keyframes waitCountdownIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes tickPulse {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+  @keyframes waitDone {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.12); }
+    60%  { transform: scale(0.96); }
+    100% { transform: scale(1); }
+  }
+
+  #wait-countdown-widget {
+    display: none;
+    position: fixed; bottom: 88px; right: 16px; z-index: 150;
+    background: var(--bg-card); border: 1px solid var(--accent-dim);
+    border-radius: 12px; padding: 12px 16px 10px;
+    text-align: center; min-width: 100px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    animation: waitCountdownIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+    cursor: pointer;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  #wait-countdown-widget:hover {
+    border-color: var(--accent);
+    box-shadow: 0 6px 32px rgba(0,0,0,0.6);
+  }
+  #wait-countdown-widget.done {
+    border-color: var(--success);
+    animation: waitDone 0.5s ease both;
+  }
+  #wait-countdown-widget.done #wc-time { color: var(--success); }
+
+  #wc-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 4px;
+  }
+  #wc-time {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 26px; font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em; color: var(--accent);
+    line-height: 1; display: block;
+    animation: tickPulse 1s ease infinite;
+  }
+  #wc-name {
+    font-family: 'Georgia', serif;
+    font-size: 10px; color: var(--text-muted);
+    margin-top: 4px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+    max-width: 110px;
+  }
+  #wc-close {
+    position: absolute; top: 5px; right: 8px;
+    background: none; border: none; color: var(--text-faint);
+    font-size: 12px; cursor: pointer; line-height: 1; padding: 2px;
+    transition: color 0.2s;
+  }
+  #wc-close:hover { color: var(--text-muted); }
+  #wc-done-msg {
+    display: none; font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--success); margin-top: 2px;
+  }
+  #wait-countdown-widget.done #wc-done-msg { display: block; }
+  #wait-countdown-widget.done #wc-time { font-size: 20px; }
 </style>
 </head>
 <body>
@@ -878,6 +973,7 @@
         </div>
       </div>
 
+      <div id="wait-estimate-form" class="wait-estimate" style="display:none"></div>
       <button class="submit-btn" id="submit-btn" onclick="submitOrder()">&#9670; Envoyer la commande</button>
       <div class="form-feedback" id="form-feedback"></div>
     </div>
@@ -1040,6 +1136,74 @@
 ════════════════════════════════════════════════════════════ */
 
 emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
+
+
+/* ----------------------------------------------------------
+   COMPTE À REBOURS POST-COMMANDE
+---------------------------------------------------------- */
+let _wcInterval   = null;
+let _wcEndTime    = null;
+let _wcClientName = '';
+
+function startWaitCountdown(mins, clientName) {
+  if (!CONFIG.TEMPS_ATTENTE_ACTIF || !mins || mins <= 0) return;
+  // Stopper un éventuel précédent
+  if (_wcInterval) clearInterval(_wcInterval);
+
+  _wcEndTime    = Date.now() + mins * 60 * 1000;
+  _wcClientName = clientName || '';
+
+  const widget  = document.getElementById('wait-countdown-widget');
+  const nameEl  = document.getElementById('wc-name');
+  const doneMsg = document.getElementById('wc-done-msg');
+
+  widget.classList.remove('done');
+  if (nameEl)  nameEl.textContent  = clientName ? clientName : '';
+  if (doneMsg) doneMsg.style.display = 'none';
+
+  widget.style.display = 'block';
+  tickWaitCountdown();
+  _wcInterval = setInterval(tickWaitCountdown, 1000);
+}
+
+function tickWaitCountdown() {
+  const widget  = document.getElementById('wait-countdown-widget');
+  const timeEl  = document.getElementById('wc-time');
+  const labelEl = document.getElementById('wc-label');
+  if (!widget || !timeEl) return;
+
+  const remaining = Math.max(0, Math.round((_wcEndTime - Date.now()) / 1000));
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+
+  if (remaining <= 0) {
+    clearInterval(_wcInterval);
+    _wcInterval = null;
+    timeEl.textContent  = '✓';
+    if (labelEl) labelEl.textContent = 'Commande';
+    widget.classList.add('done');
+    // Vibration si dispo
+    if (navigator.vibrate) navigator.vibrate([100, 60, 100]);
+  } else {
+    timeEl.textContent = m + ':' + String(s).padStart(2, '0');
+    if (labelEl) labelEl.textContent = 'Prêt dans';
+  }
+}
+
+function dismissWaitCountdown() {
+  const widget = document.getElementById('wait-countdown-widget');
+  if (widget) {
+    widget.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    widget.style.opacity    = '0';
+    widget.style.transform  = 'translateY(8px) scale(0.95)';
+    setTimeout(() => {
+      widget.style.display    = 'none';
+      widget.style.opacity    = '';
+      widget.style.transform  = '';
+    }, 300);
+  }
+  if (_wcInterval) { clearInterval(_wcInterval); _wcInterval = null; }
+}
 
 /* ----------------------------------------------------------
    MODE FÊTE
@@ -1324,6 +1488,56 @@ function displayPrice(item) {
   return getEffectivePriceDisplay(item);
 }
 
+
+
+/* ----------------------------------------------------------
+   TEMPS D'ATTENTE ESTIMÉ
+---------------------------------------------------------- */
+function calcWaitTime(items) {
+  // items = tableau de { name, qty, tempsAttente }
+  if (!CONFIG.TEMPS_ATTENTE_ACTIF) return 0;
+  return items.reduce((total, item) => {
+    const mins = item.tempsAttente || 0;
+    return total + mins * (item.qty || 1);
+  }, 0);
+}
+
+function formatWait(mins) {
+  if (mins <= 0) return null;
+  if (mins < 60) return mins + ' min';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h + 'h' + (m > 0 ? String(m).padStart(2, '0') : '00');
+}
+
+function renderWaitEstimate(containerId, items) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!CONFIG.TEMPS_ATTENTE_ACTIF) { el.style.display = 'none'; return; }
+
+  const allItems = getOrderableItems();
+  const mapped = items.map(i => {
+    const found = allItems.find(a => a.name === i.name);
+    return { ...i, tempsAttente: found ? (found.tempsAttente || 0) : 0 };
+  }).filter(i => i.qty > 0);
+
+  const mins = calcWaitTime(mapped);
+  if (!mins) { el.style.display = 'none'; return; }
+
+  el.style.display = 'flex';
+  el.innerHTML =
+    '<div class="wait-icon">⏱</div>'
+    + '<div>'
+      + '<div class="wait-label">Temps estimé</div>'
+      + '<div class="wait-value">' + formatWait(mins) + '</div>'
+      + '<div class="wait-sub">Pour l\'ensemble de ta commande</div>'
+    + '</div>';
+}
+
+function getWaitForLastOrder() {
+  if (!CONFIG.TEMPS_ATTENTE_ACTIF || !lastOrder || !lastOrder._items) return 0;
+  return calcWaitTime(lastOrder._items);
+}
 
 /* ----------------------------------------------------------
    RÉCAP
@@ -2019,7 +2233,26 @@ function showOrderConfirmed(label, modeLabel, ratingNote) {
   diamond.classList.toggle('amour', !!amourMode);
   void overlay.offsetWidth;
   text.textContent = label || 'Commande reçue';
+  // Temps d'attente sur l'écran de confirmation
+  const waitEl = document.getElementById('confirmed-wait');
+  const waitValEl = document.getElementById('confirmed-wait-value');
+  const wMins = getWaitForLastOrder();
+  const wTxt = formatWait(wMins);
+  if (waitEl && waitValEl && CONFIG.TEMPS_ATTENTE_ACTIF && wTxt && !amourMode) {
+    waitValEl.textContent = wTxt;
+    waitEl.style.display = 'block';
+  } else if (waitEl) {
+    waitEl.style.display = 'none';
+  }
   overlay.classList.add('show');
+  // Démarrer le compte à rebours dans le coin
+  if (CONFIG.TEMPS_ATTENTE_ACTIF && lastOrder && lastOrder._items && !amourMode) {
+    const wMins = getWaitForLastOrder();
+    if (wMins > 0) {
+      // Décaler légèrement pour laisser l'écran de confirmation se fermer
+      setTimeout(() => startWaitCountdown(wMins, lastOrder ? lastOrder.nom : ''), 2200);
+    }
+  }
   setTimeout(() => {
     overlay.classList.add('fade-out');
     setTimeout(() => {
@@ -2182,7 +2415,18 @@ async function submitOrder() {
     finalMessage = (finalMessage==='Aucune'?'':finalMessage+' — ') + splitTxt;
   }
 
-  lastOrder={nom,commande:commandeTxt,heure,total:totalTxt,message:finalMessage};
+  // Calcul temps d'attente
+  const waitItems = items.map(i => {
+    const found = getOrderableItems().find(a => a.name === i.name);
+    return { name: i.name, qty: i.qty, tempsAttente: found ? (found.tempsAttente || 0) : 0 };
+  });
+  const waitMins = calcWaitTime(waitItems);
+  const waitTxt = formatWait(waitMins);
+  if (CONFIG.TEMPS_ATTENTE_ACTIF && waitTxt) {
+    finalMessage = (finalMessage && finalMessage !== 'Aucune' ? finalMessage + ' — ' : '') + '⏱ Temps estimé : ' + waitTxt;
+  }
+
+  lastOrder={nom,commande:commandeTxt,heure,total:totalTxt,message:finalMessage,_items:waitItems};
 
   if(total===0){
     playDing();
@@ -2413,10 +2657,21 @@ if(CONFIG.HORAIRES_AUTO_ACTIF) setInterval(renderMenu,60000);
 initFeteMode();
 </script>
 
+
+<!-- ════ COMPTE À REBOURS COMMANDE ════ -->
+<div id="wait-countdown-widget" onclick="dismissWaitCountdown()" title="Appuie pour fermer">
+  <button id="wc-close" onclick="event.stopPropagation();dismissWaitCountdown()">&#10005;</button>
+  <div id="wc-label">Prêt dans</div>
+  <span id="wc-time">--:--</span>
+  <div id="wc-name"></div>
+  <div id="wc-done-msg">&#10003; C'est prêt !</div>
+</div>
+
 <!-- ════ CONFIRMATION PLEIN ÉCRAN ════ -->
 <div id="order-confirmed-overlay">
   <div class="confirmed-diamond" id="confirmed-diamond"></div>
   <div class="confirmed-text" id="confirmed-text">Commande reçue</div>
+  <div class="confirmed-wait" id="confirmed-wait" style="display:none">Prêt dans environ <span id="confirmed-wait-value"></span></div>
 </div>
 
 </body>
