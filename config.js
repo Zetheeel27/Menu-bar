@@ -219,4 +219,24 @@ const CONFIG = {
      AVIS_ACTIF: false → désactive complètement la demande d'avis. */
   AVIS_ACTIF: false,
 
+  /* ════════════════════════════════════════════════════════════
+     14. MODE FÊTE 🎉
+     ════════════════════════════════════════════════════════════
+     FETE_ACTIF: true  → active le mode fête (accès protégé + thème doré premium)
+                false → site normal, aucun changement
+
+     FETE_MOT_DE_PASSE → code d'accès communiqué aux invités (sensible à la casse)
+
+     FETE_TITRE        → titre affiché sur l'écran d'accueil fête
+     FETE_SOUS_TITRE   → sous-titre (ex: "Fête des Pères · Édition Prestige")
+     FETE_MESSAGE      → petit message de bienvenue affiché après connexion
+                         (laisse "" pour ne rien afficher)
+  ════════════════════════════════════════════════════════════ */
+  FETE_ACTIF:         true,
+  FETE_MOT_DE_PASSE:  "fetedesperes2026",
+
+  FETE_TITRE:         "Fête des Pères",
+  FETE_SOUS_TITRE:    "Édition Prestige · Accès Privé",
+  FETE_MESSAGE:       "🥂 Bienvenue — Thibault & Claire",
+
 };
