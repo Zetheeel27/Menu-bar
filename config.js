@@ -15,9 +15,9 @@ const CONFIG = {
   MESSAGE_DUJOUR: "🎉 Soirée spéciale ce soir — happy hour jusqu'à 22h ",
 
   /* ── 3. OUVERTURE ── */
-  HORAIRES_AUTO_ACTIF: true,
+  HORAIRES_AUTO_ACTIF: false,
   BAR_OUVERT:        true,
-  RESTAURANT_OUVERT: false,
+  RESTAURANT_OUVERT: true,
   RESTAURANT_ACTIF:  true,
   BAR_HORAIRES:        { debut: "20:00", fin: "23:00" },
   RESTAURANT_HORAIRES: { debut: "20:00", fin: "00:00" },
@@ -33,8 +33,8 @@ const CONFIG = {
 
   /* ── 6. PRODUITS DÉSACTIVÉS ── */
   DISABLED_PRODUCTS: [
-    "Piña Colada", "Mojito", "Mojito Fraise", "Jäger Bomb", "Tasty Crousty", 
-    "Saumon Teriyaki", "Pâtes Carbonara", "Pâtes Saumon", 
+    "", "Mojito", "Mojito Fraise", "Jäger Bomb", "", 
+    "", "", "", 
     "Tajine Poulet Olives Pommes de terre", "Tajine Haricots", "Tajine Pruneaux"
   ],
 
