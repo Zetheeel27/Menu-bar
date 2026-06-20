@@ -538,9 +538,226 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
+
+  /* ════════════════════════════════════════════════════════════
+     MODE FÊTE — thème doré premium
+  ════════════════════════════════════════════════════════════ */
+  body.fete-mode {
+    --accent:      #d4af5a;
+    --accent-dim:  #b8903a;
+    --bg:          #080705;
+    --bg-card:     #110f0b;
+    --text:        #f8f4ec;
+    --text-muted:  #8a806a;
+    --text-faint:  #2e2920;
+    --border:      #1e1a12;
+    --vip-gold:    #f5cc60;
+    --vip-bg:      #110d04;
+  }
+
+  @keyframes goldShimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 300% 0; }
+  }
+  @keyframes particleDrift {
+    0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 0; }
+    10%  { opacity: 0.8; }
+    90%  { opacity: 0.4; }
+    100% { transform: translateY(-100vh) rotate(720deg) scale(0.3); opacity: 0; }
+  }
+  @keyframes feteGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(212,175,90,0.08), inset 0 0 40px rgba(212,175,90,0.03); }
+    50%       { box-shadow: 0 0 40px rgba(212,175,90,0.18), inset 0 0 60px rgba(212,175,90,0.06); }
+  }
+  @keyframes crownFloat {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-6px); }
+  }
+
+  /* ── Écran d'accueil fête ── */
+  #fete-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #080705;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem;
+    animation: fadeIn 0.5s ease both;
+    overflow: hidden;
+  }
+  #fete-gate::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(212,175,90,0.12) 0%, transparent 65%),
+                radial-gradient(ellipse at 50% 100%, rgba(212,175,90,0.07) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .fete-gate-ornament {
+    font-size: 9px; letter-spacing: 0.55em; text-transform: uppercase;
+    color: rgba(212,175,90,0.35); margin-bottom: 2.5rem;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    display: flex; align-items: center; gap: 18px;
+  }
+  .fete-gate-ornament::before, .fete-gate-ornament::after {
+    content: '';
+    width: 50px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,90,0.4), transparent);
+  }
+  .fete-gate-crown {
+    font-size: 40px; margin-bottom: 1.5rem;
+    animation: crownFloat 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 16px rgba(212,175,90,0.6));
+    display: block; text-align: center;
+  }
+  .fete-gate-title {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(22px, 5vw, 30px);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    background: linear-gradient(110deg, #a07030 0%, #f0c85a 35%, #fff8e8 52%, #f0c85a 68%, #a07030 100%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: goldShimmer 5s linear infinite;
+    text-align: center; margin-bottom: 0.5rem;
+  }
+  .fete-gate-subtitle {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(212,175,90,0.45); margin-bottom: 3.5rem; text-align: center;
+  }
+  .fete-gate-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(212,175,90,0.4); margin-bottom: 12px;
+  }
+  .fete-gate-input {
+    background: rgba(212,175,90,0.04); border: 1px solid rgba(212,175,90,0.2);
+    border-radius: 8px; color: #f8f4ec;
+    font-family: 'Georgia', serif; font-size: 20px;
+    padding: 15px 24px; width: 100%; max-width: 300px;
+    outline: none; text-align: center; letter-spacing: 0.22em;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    animation: feteGlow 4s ease-in-out infinite;
+  }
+  .fete-gate-input:focus {
+    border-color: rgba(212,175,90,0.6);
+    box-shadow: 0 0 0 4px rgba(212,175,90,0.07), 0 0 24px rgba(212,175,90,0.12);
+  }
+  .fete-gate-input.error { border-color: #c05040; animation: shake 0.35s; }
+  .fete-gate-input::placeholder { color: rgba(212,175,90,0.25); }
+  .fete-gate-err {
+    font-size: 12px; font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #e07060; min-height: 20px; margin-top: 12px; text-align: center;
+  }
+  .fete-gate-btn {
+    margin-top: 18px; width: 100%; max-width: 300px;
+    padding: 15px 24px; border: none; border-radius: 8px; cursor: pointer;
+    font-family: 'Georgia', serif; font-size: 13px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: #0a0806;
+    background: linear-gradient(110deg, #b8903a 0%, #f0c85a 30%, #fff5d0 50%, #f0c85a 70%, #b8903a 100%);
+    background-size: 250% 100%;
+    animation: goldShimmer 4s linear infinite;
+    box-shadow: 0 2px 24px rgba(212,175,90,0.35);
+    transition: box-shadow 0.25s, transform 0.15s;
+  }
+  .fete-gate-btn:hover { box-shadow: 0 4px 36px rgba(212,175,90,0.55); transform: translateY(-1px); }
+  .fete-gate-btn:active { transform: translateY(0); }
+
+  /* ── Particules dorées flottantes ── */
+  .gold-particle {
+    position: fixed; bottom: -10px; pointer-events: none; z-index: 9998;
+    color: rgba(212,175,90,0.6); font-size: 7px; user-select: none;
+    animation-name: particleDrift; animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+  }
+
+  /* ── Bannière fête dans le header ── */
+  .fete-banner {
+    margin-top: 14px; padding: 12px 20px;
+    border: 1px solid rgba(212,175,90,0.25);
+    border-radius: 8px; text-align: center;
+    background: rgba(212,175,90,0.04);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px; color: rgba(212,175,90,0.75);
+    animation: fadeInUp 0.6s ease both;
+    position: relative; overflow: hidden;
+  }
+  .fete-banner::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,90,0.6), transparent);
+    background-size: 200% 100%;
+    animation: goldShimmer 5s linear infinite;
+  }
+
+  /* ── Titre premium en mode fête ── */
+  body.fete-mode .bar-name {
+    background: linear-gradient(110deg, #a07030 0%, #f0c85a 30%, #fff8e8 50%, #f0c85a 70%, #a07030 100%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: goldShimmer 7s linear infinite;
+    font-size: 30px; letter-spacing: 0.3em;
+  }
+  body.fete-mode .menu-divider { color: rgba(212,175,90,0.25); }
+  body.fete-mode .menu-divider::before,
+  body.fete-mode .menu-divider::after {
+    background: linear-gradient(90deg, transparent, rgba(212,175,90,0.35), transparent);
+  }
+  body.fete-mode .menu-header {
+    position: relative; padding-bottom: 2rem;
+  }
+  body.fete-mode .menu-header::after {
+    content: '';
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,90,0.5), transparent);
+  }
+  body.fete-mode .category-title {
+    letter-spacing: 0.28em;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  body.fete-mode .c-price { font-size: 15px; letter-spacing: 0.06em; }
+  body.fete-mode .order-fab {
+    background: linear-gradient(110deg, #b8903a 0%, #f0c85a 30%, #fff5d0 50%, #f0c85a 70%, #b8903a 100%);
+    background-size: 250% 100%;
+    animation: goldShimmer 5s linear infinite;
+    box-shadow: 0 4px 28px rgba(212,175,90,0.4);
+    font-size: 14px; letter-spacing: 0.22em;
+  }
+  body.fete-mode .tabs { border-bottom-color: rgba(212,175,90,0.12); }
+  body.fete-mode .tab-btn.active {
+    background: linear-gradient(110deg, #b8903a 0%, #f0c85a 40%, #fff5d0 55%, #f0c85a 70%, #b8903a 100%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: goldShimmer 6s linear infinite;
+    border-bottom-color: var(--accent);
+  }
+  body.fete-mode .cocktail-row { border-bottom-color: rgba(212,175,90,0.1); }
+  body.fete-mode .subtab-btn.active {
+    border-color: var(--accent);
+    background: rgba(212,175,90,0.06);
+  }
+  body.fete-mode .vip-section::before { opacity: 0.7; }
 </style>
 </head>
 <body>
+
+<!-- ════ PORTE D'ACCUEIL FÊTE ════ -->
+<div id="fete-gate" style="display:none">
+  <div class="fete-gate-ornament">Accès Privé</div>
+  <div class="fete-gate-crown">♛</div>
+  <div class="fete-gate-title" id="fete-gate-title"></div>
+  <div class="fete-gate-subtitle" id="fete-gate-subtitle"></div>
+  <div class="fete-gate-label">Code d'invitation</div>
+  <input class="fete-gate-input" id="fete-gate-input" type="password" placeholder="••••••••"
+    autocomplete="off" inputmode="text"
+    onkeydown="if(event.key==='Enter') checkFetePassword()">
+  <div class="fete-gate-err" id="fete-gate-err"></div>
+  <button class="fete-gate-btn" onclick="checkFetePassword()">&#9670; Entrer</button>
+</div>
 
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('menu')">&#9670; Carte</button>
@@ -555,6 +772,7 @@
     <div class="menu-header">
       <div class="bar-name" id="site-title">ZAK'S BAR</div>
       <div class="bar-tagline" id="site-tagline">Cocktails faits maison</div>
+      <div id="fete-banner" class="fete-banner" style="display:none"></div>
       <div id="amour-banner" class="amour-banner" style="display:none">💕 Mode Amour activé — tout est offert pour toi !</div>
 
       <!-- VIP session badge -->
@@ -822,6 +1040,93 @@
 ════════════════════════════════════════════════════════════ */
 
 emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
+
+/* ----------------------------------------------------------
+   MODE FÊTE
+---------------------------------------------------------- */
+const FETE_SESSION_KEY = "zaksbar_fete_session_v1";
+
+let feteUnlocked = sessionStorage.getItem(FETE_SESSION_KEY) === 'true';
+let feteParticlesInterval = null;
+
+function initFeteMode() {
+  if (!CONFIG.FETE_ACTIF) return;
+
+  // Injecter le titre et sous-titre depuis config
+  const titleEl = document.getElementById('fete-gate-title');
+  const subEl   = document.getElementById('fete-gate-subtitle');
+  if (titleEl) titleEl.textContent = CONFIG.FETE_TITRE || '';
+  if (subEl)   subEl.textContent   = CONFIG.FETE_SOUS_TITRE || '';
+
+  if (!feteUnlocked) {
+    document.getElementById('fete-gate').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      const inp = document.getElementById('fete-gate-input');
+      if (inp) inp.focus();
+    }, 400);
+  } else {
+    applyFeteMode();
+  }
+}
+
+function checkFetePassword() {
+  const input = document.getElementById('fete-gate-input');
+  const errEl = document.getElementById('fete-gate-err');
+  if (!input) return;
+  if (input.value === CONFIG.FETE_MOT_DE_PASSE) {
+    sessionStorage.setItem(FETE_SESSION_KEY, 'true');
+    feteUnlocked = true;
+    // Fermer la porte avec fondu
+    const gate = document.getElementById('fete-gate');
+    gate.style.transition = 'opacity 0.6s ease';
+    gate.style.opacity = '0';
+    setTimeout(() => {
+      gate.style.display = 'none';
+      document.body.style.overflow = '';
+      applyFeteMode();
+    }, 600);
+  } else {
+    errEl.textContent = 'Code incorrect — veuillez réessayer.';
+    input.classList.add('error');
+    input.value = '';
+    setTimeout(() => { input.classList.remove('error'); errEl.textContent = ''; }, 1500);
+  }
+}
+
+function applyFeteMode() {
+  document.body.classList.add('fete-mode');
+  renderFeteBanner();
+  startGoldParticles();
+}
+
+function renderFeteBanner() {
+  const el = document.getElementById('fete-banner');
+  if (!el) return;
+  const msg = CONFIG.FETE_MESSAGE;
+  if (msg) { el.textContent = msg; el.style.display = 'block'; }
+  else { el.style.display = 'none'; }
+}
+
+const GOLD_CHARS = ['✦', '✧', '◆', '◇', '·', '⋄', '✶'];
+function spawnGoldParticle() {
+  const p = document.createElement('div');
+  p.className = 'gold-particle';
+  p.textContent = GOLD_CHARS[Math.floor(Math.random() * GOLD_CHARS.length)];
+  p.style.left = (Math.random() * 100) + 'vw';
+  p.style.fontSize = (5 + Math.random() * 9) + 'px';
+  const dur = 6 + Math.random() * 6;
+  p.style.animationDuration = dur + 's';
+  p.style.animationDelay = (Math.random() * 2) + 's';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), (dur + 2) * 1000);
+}
+function startGoldParticles() {
+  if (feteParticlesInterval) return;
+  feteParticlesInterval = setInterval(spawnGoldParticle, 800);
+}
+
+
 
 /* ----------------------------------------------------------
    COMPTE À REBOURS
@@ -1601,6 +1906,7 @@ function renderAmourBanner() {
 function renderMenu() {
   renderMessageDuJour();
   renderAmourBanner();
+  if(CONFIG.FETE_ACTIF && feteUnlocked) renderFeteBanner();
   renderVipHeader();
   renderVIP();
 
@@ -2103,6 +2409,8 @@ document.getElementById('site-tagline').textContent=CONFIG.BAR_TAGLINE;
 renderMenu();
 if(amourMode){document.getElementById('secret-heart').classList.add('active');startHearts();}
 if(CONFIG.HORAIRES_AUTO_ACTIF) setInterval(renderMenu,60000);
+// Mode fête — doit être appelé en dernier pour prendre le dessus si actif
+initFeteMode();
 </script>
 
 <!-- ════ CONFIRMATION PLEIN ÉCRAN ════ -->
