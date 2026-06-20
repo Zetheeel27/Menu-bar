@@ -15,9 +15,9 @@ const CONFIG = {
   MESSAGE_DUJOUR: "🎉 Soirée spéciale ce soir — happy hour jusqu'à 22h ",
 
   /* ── 3. OUVERTURE ── */
-  HORAIRES_AUTO_ACTIF: false,
+  HORAIRES_AUTO_ACTIF: true,
   BAR_OUVERT:        true,
-  RESTAURANT_OUVERT: true,
+  RESTAURANT_OUVERT: false,
   RESTAURANT_ACTIF:  true,
   BAR_HORAIRES:        { debut: "20:00", fin: "23:00" },
   RESTAURANT_HORAIRES: { debut: "20:00", fin: "00:00" },
@@ -90,6 +90,7 @@ const CONFIG = {
       category: "Signatures",
       price: "2€",
       pricePerUnit: 2,
+      tempsAttente: 5,
       desc: "Rhum blanc, lait de coco, jus d'ananas",
       ingredients: ["rhum blanc", "lait de coco", "jus d'ananas"]
     },
@@ -98,6 +99,7 @@ const CONFIG = {
       category: "Classiques",
       price: "2€",
       pricePerUnit: 2,
+      tempsAttente: 5,
       desc: "Rhum blanc, menthe fraîche, citron vert, sirop de sucre, eau gazeuse",
       ingredients: ["rhum blanc", "menthe", "citron vert", "sirop de sucre", "eau gazeuse"]
     },
@@ -106,6 +108,7 @@ const CONFIG = {
       category: "Deluxe",
       price: "2€",
       pricePerUnit: 2,
+      tempsAttente: 5,
       desc: "Tequila, jus d'orange, grenadine",
       ingredients: ["tequila", "jus d'orange", "grenadine"]
     },
@@ -114,6 +117,7 @@ const CONFIG = {
       category: "Deluxe",
       price: "2€",
       pricePerUnit: 2,
+      tempsAttente: 5,
       desc: "Rhum blanc, fraise fraîche, menthe, citron vert, sirop de sucre, eau gazeuse",
       ingredients: ["rhum blanc", "fraise", "menthe", "citron vert", "sirop de sucre", "eau gazeuse"]
     },
@@ -122,6 +126,7 @@ const CONFIG = {
       category: "Deluxe",
       price: "2€",
       pricePerUnit: 2,
+      tempsAttente: 5,
       desc: "Jägermeister plongé dans une boisson énergisante",
       ingredients: ["jägermeister", "boisson énergisante"]
     },
@@ -134,6 +139,7 @@ const CONFIG = {
       category: "Signatures",
       price: "8€",
       pricePerUnit: 8,
+      tempsAttente: 30,
       desc: "Riz, tenders, sauce secrète, oignons frits",
       ingredients: ["riz", "tenders", "creme fraiche", "sauce soja sucrée", "sauce aigre douce", "oignons frits", "miel"]
     },
@@ -142,6 +148,7 @@ const CONFIG = {
       category: "Signatures",
       price: "8€",
       pricePerUnit: 8,
+      tempsAttente: 30,
       desc: "Pavé de saumon laqué à la sauce teriyaki, riz, graines de sésame, avocats",
       ingredients: ["saumon", "sauce teriyaki", "riz", "graines de sésame", "avocats"]
     },
@@ -150,6 +157,7 @@ const CONFIG = {
       category: "Classiques",
       price: "5€",
       pricePerUnit: 5,
+      tempsAttente: 15,
       desc: "Pâtes, lardons, crème fraîche, parmesan, poivre",
       ingredients: ["pâtes", "lardons", "crème fraîche", "parmesan", "poivre"]
     },
@@ -158,6 +166,7 @@ const CONFIG = {
       category: "Classiques",
       price: "5€",
       pricePerUnit: 5,
+      tempsAttente: 15,
       desc: "Pâtes, saumon fumé, crème fraîche, citron",
       ingredients: ["pâtes", "saumon fumé", "crème fraîche", "citron"]
     },
@@ -166,6 +175,7 @@ const CONFIG = {
       category: "Tajines",
       price: "8€",
       pricePerUnit: 8,
+      tempsAttente: 20,
       desc: "Poulet mijoté, olives, pommes de terre, citron confit, épices",
       ingredients: ["poulet", "olives", "pommes de terre", "citron confit", "épices tajine", "oignon"]
     },
@@ -174,6 +184,7 @@ const CONFIG = {
       category: "Tajines",
       price: "8€",
       pricePerUnit: 8,
+      tempsAttente: 18,
       desc: "Haricots verts mijotés à la tomate, oignon, épices",
       ingredients: ["haricots verts", "tomate", "oignon", "ail", "épices tajine", "huile d'olive"]
     },
@@ -182,6 +193,7 @@ const CONFIG = {
       category: "Tajines",
       price: "8€",
       pricePerUnit: 8,
+      tempsAttente: 20,
       desc: "Viande mijotée aux pruneaux, amandes, miel, épices",
       ingredients: ["viande", "pruneaux", "amandes", "oignon", "miel", "épices tajine"]
     },
@@ -212,7 +224,14 @@ const CONFIG = {
   AMOUR_MOT_DE_PASSE: "270924",
   AMOUR_NOM: "Angeline",
 
-  /* ── 13. DEMANDE D'AVIS ──
+  /* ── 13. TEMPS D'ATTENTE ──
+     tempsAttente sur chaque cocktail/plat = minutes estimées pour préparer 1 unité.
+     Le total affiché au client = somme des tempsAttente × quantités commandées.
+     TEMPS_ATTENTE_ACTIF: false → désactive complètement l'affichage du temps.
+     Exemple : 2× Mojito (3 min each) + 1× Tasty Crousty (12 min) = 18 min affichés.  */
+  TEMPS_ATTENTE_ACTIF: true,
+
+  /* ── 14. DEMANDE D'AVIS ──
      Après une commande (Paypal ou Espèces), le site peut demander une note
      en étoiles. Cette demande s'affiche au maximum 1 fois par semaine et
      par appareil (mémorisé sur le téléphone/ordinateur du client).
@@ -237,6 +256,6 @@ const CONFIG = {
 
   FETE_TITRE:         "Fête des Pères",
   FETE_SOUS_TITRE:    "Édition Prestige · Accès Privé",
-  FETE_MESSAGE:       "🥂 Bienvenue — Thibault & Claire",
+  FETE_MESSAGE:       "🥂 Bienvenue — Thibault & Claire.",
 
 };
