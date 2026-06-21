@@ -2135,7 +2135,7 @@ function renderMenu() {
       :renderClosedMessage('boissons');
   } else {
     html=isRestaurantOpen()
-      ?renderItemsList(CONFIG.PLATS,["Signatures","Classiques","Tajines","Personnalisé"])
+      ?renderItemsList(CONFIG.PLATS,["Signatures","Classiques","Tajines","Desserts","Personnalisé"])
       :renderClosedMessage('resto');
   }
 
