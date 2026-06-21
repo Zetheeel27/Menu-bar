@@ -12,10 +12,10 @@ const CONFIG = {
 
   /* ── 2. MESSAGE DU JOUR ── */
   MESSAGE_DUJOUR_ACTIF: false,
-  MESSAGE_DUJOUR: "🎉 Soirée spéciale ce soir — happy hour jusqu'à 22h ",
+  MESSAGE_DUJOUR: "🥂 Soirée spéciale ce soir — Fête des Pères ! 🥂",
 
   /* ── 3. OUVERTURE ── */
-  HORAIRES_AUTO_ACTIF: true,
+  HORAIRES_AUTO_ACTIF: false,
   BAR_OUVERT:        true,
   RESTAURANT_OUVERT: false,
   RESTAURANT_ACTIF:  true,
@@ -188,6 +188,7 @@ const CONFIG = {
       desc: "Haricots verts mijotés à la tomate, oignon, épices",
       ingredients: ["haricots verts", "tomate", "oignon", "ail", "épices tajine", "huile d'olive"]
     },
+    
     {
       name: "Tajine Pruneaux",
       category: "Tajines",
@@ -197,6 +198,81 @@ const CONFIG = {
       desc: "Viande mijotée aux pruneaux, amandes, miel, épices",
       ingredients: ["viande", "pruneaux", "amandes", "oignon", "miel", "épices tajine"]
     },
+
+    {
+      name: "Glace Fraise",
+      category: "Desserts",
+      price: "1€",
+      pricePerUnit: 1,
+      tempsAttente: 10,
+      desc: "Glace à la fraise, garnie de chantilly",
+      ingredients: ["fraise", "lait", "sucre", "vanille"]
+    },
+
+    {
+      name: "Glace Vanille",
+      category: "Desserts",
+      price: "1€",
+      pricePerUnit: 1,
+      tempsAttente: 10,
+      desc: "Glace à la vanille, garnie de chantilly",
+      ingredients: ["vanille", "lait", "sucre"]
+    },
+
+    {
+      name: "Glace Café",
+      category: "Desserts",
+      price: "1€",
+      pricePerUnit: 1,
+      tempsAttente: 10,
+      desc: "Glace au café, garnie de chantilly",
+      ingredients: ["café", "lait", "sucre", "vanille"]
+    },
+
+    {
+      name: "Glace Caramel",
+      category: "Desserts",
+      price: "1€",
+      pricePerUnit: 1,
+      tempsAttente: 10,
+      desc: "Glace au caramel, garnie de chantilly",
+      ingredients: ["caramel", "lait", "sucre", "vanille"]
+    },
+
+    
+    {
+      name: "Glace Framboise",
+      category: "Desserts",
+      price: "1€",
+      pricePerUnit: 1,
+      tempsAttente: 10,
+      desc: "Glace à la framboise, garnie de chantilly",
+      ingredients: ["framboise", "lait", "sucre", "vanille"]
+    },
+    
+    {
+      name: "Glace Menthe chocolat",
+      category: "Desserts",
+      price: "1€",
+      pricePerUnit: 1,
+      tempsAttente: 10,
+      desc: "Glace à la menthe chocolat, garnie de chantilly",
+      ingredients: ["menthe", "chocolat", "lait", "sucre", "vanille"]
+    },
+    
+    {
+      name: "Glace Chiocolat",
+      category: "Desserts",
+      price: "1€",
+      pricePerUnit: 1,
+      tempsAttente: 10,
+      desc: "Glace au chocolat, garnie de chantilly",
+      ingredients: ["chocolat", "lait", "sucre", "vanille"]
+    },
+
+
+
+
   ],
 
   /* ── 10. INGRÉDIENTS DE BASE ── */
@@ -252,7 +328,7 @@ const CONFIG = {
                          (laisse "" pour ne rien afficher)
   ════════════════════════════════════════════════════════════ */
   FETE_ACTIF:         true,
-  FETE_MOT_DE_PASSE:  "fetedesperes2026",
+  FETE_MOT_DE_PASSE:  "fetethibault2026",
 
   FETE_TITRE:         "Fête des Pères",
   FETE_SOUS_TITRE:    "Édition Prestige · Accès Privé",
