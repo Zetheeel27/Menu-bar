@@ -327,7 +327,7 @@ const CONFIG = {
      FETE_MESSAGE      → petit message de bienvenue affiché après connexion
                          (laisse "" pour ne rien afficher)
   ════════════════════════════════════════════════════════════ */
-  FETE_ACTIF:         true,
+  FETE_ACTIF:         false,
   FETE_MOT_DE_PASSE:  "fetethibault2026",
 
   FETE_TITRE:         "Fête des Pères",
