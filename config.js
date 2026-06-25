@@ -33,7 +33,7 @@ const CONFIG = {
 
   /* ── 6. PRODUITS DÉSACTIVÉS ── */
   DISABLED_PRODUCTS: [
-    "", "Mojito", "Mojito Fraise", "Jäger Bomb", "", 
+    "", "", "Mojito Fraise", "Jäger Bomb", "", 
     "", "", "", 
     "Tajine Poulet Olives Pommes de terre", "Tajine Haricots", "Tajine Pruneaux"
   ],
