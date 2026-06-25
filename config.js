@@ -37,7 +37,7 @@ const CONFIG = {
     "", "", "", 
     "Tajine Poulet Olives Pommes de terre", "Tajine Haricots", "Tajine Pruneaux"
   ],
-
+  
   /* ──────────────────────────────────────────────────────────
      7. COMPTES VIP
      ──────────────────────────────────────────────────────────
