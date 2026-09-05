@@ -1213,6 +1213,12 @@ const FETE_SESSION_KEY = "zaksbar_fete_session_v1";
 let feteUnlocked = sessionStorage.getItem(FETE_SESSION_KEY) === 'true';
 let feteParticlesInterval = null;
 
+/* Mode fête gratuite : tout est offert pour quiconque est entré avec le code
+   fête, tant que CONFIG.FETE_GRATUIT est activé (soirée spéciale, ex. anniv). */
+function isPartyFree() {
+  return !!(CONFIG.FETE_ACTIF && CONFIG.FETE_GRATUIT && feteUnlocked);
+}
+
 function initFeteMode() {
   if (!CONFIG.FETE_ACTIF) return;
 
@@ -1262,6 +1268,7 @@ function applyFeteMode() {
   document.body.classList.add('fete-mode');
   renderFeteBanner();
   startGoldParticles();
+  renderMenu();
 }
 
 function renderFeteBanner() {
@@ -1463,6 +1470,7 @@ function renderVipHeader() {
 ---------------------------------------------------------- */
 function getEffectivePrice(item) {
   if (amourMode) return 0;
+  if (isPartyFree()) return 0;
   if (vipSession && vipSession.config.gratuit) return 0;
   if (vipSession && vipSession.config.prixReduit !== 1) {
     return Math.round(item.pricePerUnit * vipSession.config.prixReduit * 100) / 100;
@@ -1472,6 +1480,7 @@ function getEffectivePrice(item) {
 
 function getEffectivePriceDisplay(item) {
   if (amourMode) return '💕 Offert';
+  if (isPartyFree()) return '🎉 Offert';
   if (vipSession && vipSession.config.gratuit) return '&#9670; Offert';
   if (vipSession && vipSession.config.prixReduit !== 1) {
     const p = getEffectivePrice(item);
@@ -1553,14 +1562,14 @@ function renderRecap(items, grandTotal) {
   selected.forEach((item, idx) => {
     const qty = quantities[item.name];
     const effP = getEffectivePrice(item);
-    const line = effP > 0 ? (effP * qty) + '€' : (amourMode ? '💕' : '&#9670;');
+    const line = effP > 0 ? (effP * qty) + '€' : (amourMode ? '💕' : (isPartyFree() ? '🎉' : '&#9670;'));
     html += '<div class="recap-line" style="animation-delay:' + (idx * 30) + 'ms">'
       + '<span class="recap-line-name">' + item.name + '</span>'
       + '<span class="recap-line-qty">× ' + qty + '</span>'
       + '<span class="recap-line-price">' + line + '</span>'
     + '</div>';
   });
-  if (!amourMode && !(vipSession && vipSession.config.gratuit) && tipAmount > 0) {
+  if (!amourMode && !(vipSession && vipSession.config.gratuit) && !isPartyFree() && tipAmount > 0) {
     html += '<div class="recap-line">'
       + '<span class="recap-line-name">Pourboire</span>'
       + '<span class="recap-line-qty"></span>'
@@ -1570,6 +1579,7 @@ function renderRecap(items, grandTotal) {
 
   linesEl.innerHTML = html;
   if (amourMode) totalEl.textContent = '💕 Offert';
+  else if (isPartyFree()) totalEl.textContent = '🎉 Offert';
   else if (vipSession && vipSession.config.gratuit) totalEl.textContent = '◆ Offert';
   else totalEl.textContent = grandTotal > 0 ? grandTotal + '€' : 'Gratuit';
   recap.style.display = 'block';
@@ -1780,7 +1790,7 @@ function shouldAskRating() {
   // Demande d'avis désactivée depuis config.js
   if (CONFIG.AVIS_ACTIF === false) return false;
   // Pas de notation pour mode amour ou VIP gratuit
-  if (amourMode || (vipSession && vipSession.config.gratuit)) return false;
+  if (amourMode || (vipSession && vipSession.config.gratuit) || isPartyFree()) return false;
   try {
     const last = parseInt(localStorage.getItem(RATING_LAST_KEY) || '0', 10);
     return (Date.now() - last) >= RATING_WEEK_MS;
@@ -1882,7 +1892,7 @@ function setSplitMode(mode) {
 
 function getCurrentGrandTotal() {
   const items = getOrderableItems();
-  const forceFreeTip = amourMode || (vipSession && vipSession.config.gratuit);
+  const forceFreeTip = amourMode || (vipSession && vipSession.config.gratuit) || isPartyFree();
   let total = 0;
   items.forEach(item => {
     const qty = quantities[item.name] || 0;
@@ -1999,7 +2009,7 @@ function renderSplitResult(grandTotal) {
       assigned.forEach(n => { if (totals[n] !== undefined) totals[n] += share; });
     });
     // Pourboire partagé également si applicable
-    const forceFreeTip = amourMode || (vipSession && vipSession.config.gratuit);
+    const forceFreeTip = amourMode || (vipSession && vipSession.config.gratuit) || isPartyFree();
     if (!forceFreeTip && tipAmount > 0) {
       const tipShare = tipAmount / splitNames.length;
       splitNames.forEach(n => totals[n] += tipShare);
@@ -2130,9 +2140,14 @@ function renderMenu() {
 
   let html;
   if(currentSection==='boissons'){
-    html=isBarOpen()
-      ?renderItemsList(CONFIG.COCKTAILS,["Signatures","Classiques","Deluxe","V.I.P.","Personnalisé"])
-      :renderClosedMessage('boissons');
+    if(!isBarOpen()){
+      html=renderClosedMessage('boissons');
+    } else if(isPartyFree()){
+      const soireeItems=CONFIG.COCKTAILS.map(c=>({...c, category:'Cocktails de la soirée'}));
+      html=renderItemsList(soireeItems, ["Cocktails de la soirée","Personnalisé"]);
+    } else {
+      html=renderItemsList(CONFIG.COCKTAILS,["Signatures","Classiques","Deluxe","V.I.P.","Personnalisé"]);
+    }
   } else {
     html=isRestaurantOpen()
       ?renderItemsList(CONFIG.PLATS,["Signatures","Classiques","Tajines","Desserts","Personnalisé"])
@@ -2190,6 +2205,12 @@ function openOrder() {
     modalTitle.innerHTML='&#9670; Commande V.I.P.';
     tipGroup.style.display=vipSession.config.gratuit?'none':'block';
     submitBtn.classList.add('vip-submit');
+  } else if(isPartyFree()){
+    orderNom.value='';
+    orderMsg.placeholder='Un mot pour le barman... (optionnel)';
+    modalTitle.innerHTML='🎉 Commande — tout offert';
+    tipGroup.style.display='none';
+    submitBtn.classList.remove('vip-submit');
   } else {
     orderNom.value='';
     orderMsg.placeholder='Moins fort, plus fort... (optionnel)';
@@ -2328,7 +2349,7 @@ function renderOrderForm() {
   grid.innerHTML=html;
 
   // Tip : masqué si VIP gratuit ou amour
-  const forceFreeTip = amourMode || (vipSession && vipSession.config.gratuit);
+  const forceFreeTip = amourMode || (vipSession && vipSession.config.gratuit) || isPartyFree();
   if(!forceFreeTip) grandTotal+=tipAmount;
 
   const totalEl=document.getElementById('order-total');
@@ -2341,7 +2362,7 @@ function renderOrderForm() {
   renderRecap(items,grandTotal);
 
   // Split : visible seulement si total > 0 et pas mode amour/VIP gratuit
-  const forceFreeSplit = amourMode || (vipSession && vipSession.config.gratuit);
+  const forceFreeSplit = amourMode || (vipSession && vipSession.config.gratuit) || isPartyFree();
   const splitGroup = document.getElementById('split-group');
   if (splitGroup) splitGroup.style.display = (grandTotal > 0 && !forceFreeSplit) ? 'block' : 'none';
   if (splitOpen && !forceFreeSplit) {
@@ -2378,11 +2399,12 @@ async function submitOrder() {
   const now=new Date();
   const heure=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 
-  const forceFreeTip=amourMode||(vipSession&&vipSession.config.gratuit);
+  const forceFreeTip=amourMode||(vipSession&&vipSession.config.gratuit)||isPartyFree();
   const itemsTotal=items.reduce((sum,i)=>sum+(i.effectivePrice*i.qty),0);
   const total=itemsTotal+(forceFreeTip?0:tipAmount);
   let totalTxt;
   if(amourMode) totalTxt='💕 Offert avec amour';
+  else if(isPartyFree()) totalTxt='🎉 Offert — '+(CONFIG.FETE_TITRE||'Soirée spéciale');
   else if(vipSession&&vipSession.config.gratuit) totalTxt='&#9670; Offert — V.I.P. '+vipSession.nom;
   else totalTxt=(total>0?total+'€':'Gratuit');
 
@@ -2394,10 +2416,11 @@ async function submitOrder() {
 
   let finalMessage=message||'Aucune';
   if(amourMode) finalMessage=(message?message+' — ':'')+' 💕 Commande envoyée via le Mode Amour';
+  else if(isPartyFree()) finalMessage=(message?message+' — ':'')+'🎉 '+(CONFIG.FETE_TITRE||'Soirée spéciale')+' — tout offert';
   else if(vipSession) finalMessage=(message?message+' — ':'')+vipSession.config.badgeEmail;
 
   // Ajouter le split dans le message si actif
-  if(splitOpen && splitNames.length && !amourMode && !(vipSession&&vipSession.config.gratuit)){
+  if(splitOpen && splitNames.length && !amourMode && !(vipSession&&vipSession.config.gratuit) && !isPartyFree()){
     let splitTxt = '\n◆ SPLIT (' + (splitMode==='equal'?'parts égales':'chacun ses articles') + ') : ';
     if(splitMode==='equal'){
       const share = Math.round((total/splitNames.length)*100)/100;
@@ -2510,7 +2533,7 @@ async function payPaypal() {
   playDing(); window.open(currentPaypalUrl,'_blank');
   btn.textContent='✓ Prêt';
   const items = getOrderableItems().filter(c => isAvailable(c) && (quantities[c.name]||0) > 0);
-  const canRate = !amourMode && !(vipSession && vipSession.config.gratuit) && items.length;
+  const canRate = !amourMode && !(vipSession && vipSession.config.gratuit) && !isPartyFree() && items.length;
   if (canRate) {
     showRatingStep(items, ratingNote => {
       showOrderConfirmed('Commande reçue', '💳 Règlement choisi : PAYPAL', ratingNote);
@@ -2524,7 +2547,7 @@ async function payCash() {
   const btn=document.getElementById('cash-btn'); btn.textContent='...'; btn.disabled=true;
   playDing(); btn.textContent='✓ Noté';
   const items = getOrderableItems().filter(c => isAvailable(c) && (quantities[c.name]||0) > 0);
-  const canRate = !amourMode && !(vipSession && vipSession.config.gratuit) && items.length;
+  const canRate = !amourMode && !(vipSession && vipSession.config.gratuit) && !isPartyFree() && items.length;
   if (canRate) {
     showRatingStep(items, ratingNote => {
       showOrderConfirmed('Commande reçue', '💶 Règlement choisi : ESPÈCES au comptoir', ratingNote);
