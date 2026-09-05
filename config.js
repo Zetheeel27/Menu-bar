@@ -18,7 +18,7 @@ const CONFIG = {
   HORAIRES_AUTO_ACTIF: false,
   BAR_OUVERT:        true,
   RESTAURANT_OUVERT: false,
-  RESTAURANT_ACTIF:  false,
+  RESTAURANT_ACTIF:  true,
   BAR_HORAIRES:        { debut: "20:00", fin: "23:00" },
   RESTAURANT_HORAIRES: { debut: "20:00", fin: "00:00" },
 
@@ -33,11 +33,11 @@ const CONFIG = {
 
   /* ── 6. PRODUITS DÉSACTIVÉS ── */
   DISABLED_PRODUCTS: [
-    "", "", "Mojito Fraise", "Jäger Bomb", "", 
+    "", "", "", 
     "", "", "", 
     "Tajine Poulet Olives Pommes de terre", "Tajine Haricots", "Tajine Pruneaux"
   ],
-  
+
   /* ──────────────────────────────────────────────────────────
      7. COMPTES VIP
      ──────────────────────────────────────────────────────────
@@ -113,22 +113,22 @@ const CONFIG = {
       ingredients: ["tequila", "jus d'orange", "grenadine"]
     },
     {
-      name: "Mojito Fraise",
+      name: "Mojito Framboise",
       category: "Deluxe",
       price: "2€",
       pricePerUnit: 2,
       tempsAttente: 5,
-      desc: "Rhum blanc, fraise fraîche, menthe, citron vert, sirop de sucre, eau gazeuse",
-      ingredients: ["rhum blanc", "fraise", "menthe", "citron vert", "sirop de sucre", "eau gazeuse"]
+      desc: "Rhum blanc, framboise fraîche, menthe, citron vert, sirop de sucre, eau gazeuse",
+      ingredients: ["rhum blanc", "framboise", "menthe", "citron vert", "sirop de sucre", "eau gazeuse"]
     },
     {
-      name: "Jäger Bomb",
+      name: "Daiquiri Passion",
       category: "Deluxe",
       price: "2€",
       pricePerUnit: 2,
       tempsAttente: 5,
-      desc: "Jägermeister plongé dans une boisson énergisante",
-      ingredients: ["jägermeister", "boisson énergisante"]
+      desc: "Rhum blanc, purée de fruit de la passion, citron vert, sirop de sucre",
+      ingredients: ["rhum blanc", "fruit de la passion", "citron vert", "sirop de sucre"]
     },
   ],
 
@@ -281,7 +281,7 @@ const CONFIG = {
     "vin rouge", "biere ruby", "biere blonde", "biere blanche", "tequila",
     "rhum blanc", "rhum agricole", "vodka", "rhum arrangé",
     "menthe", "eau gazeuse", "lait de coco", "jus d'ananas", "jus d'orange", "grenadine",
-    "fraise", "jägermeister", "boisson énergisante",
+    "framboise", "fruit de la passion",
   ],
   INGREDIENTS_NOURRITURE: [
     "riz", "tenders", "creme fraiche", "sauce soja sucrée", "sauce aigre douce",
@@ -326,12 +326,18 @@ const CONFIG = {
      FETE_SOUS_TITRE   → sous-titre (ex: "Fête des Pères · Édition Prestige")
      FETE_MESSAGE      → petit message de bienvenue affiché après connexion
                          (laisse "" pour ne rien afficher)
-  ════════════════════════════════════════════════════════════ */
-  FETE_ACTIF:         false,
-  FETE_MOT_DE_PASSE:  "fetethibault2026",
 
-  FETE_TITRE:         "Fête des Pères",
-  FETE_SOUS_TITRE:    "Édition Prestige · Accès Privé",
-  FETE_MESSAGE:       "🥂 Bienvenue — Thibault & Claire.",
+     FETE_GRATUIT      → true = tout est offert (0€, pas de pourboire, pas
+                         d'avis demandé) pour TOUT LE MONDE une fois entré
+                         avec FETE_MOT_DE_PASSE. Remets à false après la
+                         soirée pour repasser aux prix normaux.
+  ════════════════════════════════════════════════════════════ */
+  FETE_ACTIF:         true,
+  FETE_MOT_DE_PASSE:  "angeline18ans",
+  FETE_GRATUIT:       true,
+
+  FETE_TITRE:         "Anniversaire d'Angeline",
+  FETE_SOUS_TITRE:    "Ce soir, tout est offert 🎉",
+  FETE_MESSAGE:       "🎉 Joyeux anniversaire Angeline — tout est offert ce soir !",
 
 };
