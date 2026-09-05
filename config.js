@@ -305,7 +305,7 @@ const CONFIG = {
      Le total affiché au client = somme des tempsAttente × quantités commandées.
      TEMPS_ATTENTE_ACTIF: false → désactive complètement l'affichage du temps.
      Exemple : 2× Mojito (3 min each) + 1× Tasty Crousty (12 min) = 18 min affichés.  */
-  TEMPS_ATTENTE_ACTIF: true,
+  TEMPS_ATTENTE_ACTIF: false,
 
   /* ── 14. DEMANDE D'AVIS ──
      Après une commande (Paypal ou Espèces), le site peut demander une note
